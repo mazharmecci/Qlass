@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qlass – Workflow Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9fafc;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #1a3d7c;
+      color: #fff;
+      padding: 1.5rem;
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      padding: 2rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+      padding: 1.5rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 18px rgba(0,0,0,0.12);
+    }
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #1a3d7c;
+    }
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .card-desc {
+      font-size: 0.95rem;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <header>Qlass – Smart Workflows for Education</header>
+  <div class="container">
+    <div class="card">
+      <div class="card-icon">🎓</div>
+      <div class="card-title">Admissions</div>
+      <div class="card-desc">Applications, verification, and enrollment approvals.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📚</div>
+      <div class="card-title">Academics</div>
+      <div class="card-desc">Course creation, syllabus, and timetable workflows.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📝</div>
+      <div class="card-title">Examinations</div>
+      <div class="card-desc">Exam scheduling, invigilation, and result approvals.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">👩‍🎓</div>
+      <div class="card-title">Student Services</div>
+      <div class="card-desc">Leave requests, scholarships, hostel & transport workflows.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">👨‍🏫</div>
+      <div class="card-title">Faculty & Staff</div>
+      <div class="card-desc">Recruitment, onboarding, and appraisal workflows.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💰</div>
+      <div class="card-title">Finance</div>
+      <div class="card-desc">Fee collection, refunds, and budget approvals.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎤</div>
+      <div class="card-title">Events</div>
+      <div class="card-desc">Seminars, guest lectures, and cultural fest workflows.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📑</div>
+      <div class="card-title">Compliance</div>
+      <div class="card-desc">Accreditation, audits, and policy documentation workflows.</div>
+    </div>
+  </div>
+</body>
+</html>
