@@ -199,6 +199,7 @@ function resetStages(){
 
   updatePipelineProgress();
 }
+let courseFilter = null; // when set, history shows only that course
 
 // --- Ticket viewer (current application) ---
 function updateTicketViewer() {
@@ -292,8 +293,7 @@ function updateSnapshot() {
   if (rejEl)   rejEl.textContent = rejected;
   if (yearEl)  yearEl.textContent = thisYear;
 
-  let courseFilter = null; // when set, history shows only that course
-
+  
   if (byCourseWrap) {
     byCourseWrap.innerHTML = '';
     Object.entries(courseCounts)
