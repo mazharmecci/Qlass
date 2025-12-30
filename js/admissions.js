@@ -2,12 +2,12 @@
 
 // --- In-memory state ---
 const state = {
-  application: null,   // current / active application
-  applications: [],    // history / future multi-application UI
+  application: null,        // currently selected application
+  applications: [],         // all applications (history)
   stages: {
-    verification: 'pending', // pending | verified | rejected | waitlisted
-    approval: 'pending',     // pending | approved | rejected | waitlisted
-    enrollment: 'pending'    // pending | enrolled | rejected
+    verification: 'pending',
+    approval: 'pending',
+    enrollment: 'pending'
   },
   timestamps: {
     verification: null,
@@ -17,7 +17,7 @@ const state = {
 };
 
 // --- Persistence (localStorage) ---
-const STORAGE_KEY = 'qlass_admissions_state_v1';
+const STORAGE_KEY = 'qlass_admissions_state_v2';
 
 function saveState() {
   try {
@@ -34,16 +34,34 @@ function loadState() {
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') return;
 
-    state.application = parsed.application || null;
+    // Normalize applications with embedded stages+timestamps
     state.applications = Array.isArray(parsed.applications) ? parsed.applications : [];
-    state.stages = Object.assign(
-      { verification: 'pending', approval: 'pending', enrollment: 'pending' },
-      parsed.stages || {}
-    );
-    state.timestamps = Object.assign(
-      { verification: null, approval: null, enrollment: null },
-      parsed.timestamps || {}
-    );
+    state.applications = state.applications.map(app => ({
+      ...app,
+      stages: Object.assign(
+        { verification: 'pending', approval: 'pending', enrollment: 'pending' },
+        app.stages || {}
+      ),
+      timestamps: Object.assign(
+        { verification: null, approval: null, enrollment: null },
+        app.timestamps || {}
+      )
+    }));
+
+    // Restore current application by ID if present
+    let current = null;
+    if (parsed.application && parsed.application.id) {
+      current = state.applications.find(a => a.id === parsed.application.id) || null;
+    }
+
+    state.application = current;
+    if (current) {
+      state.stages = { ...current.stages };
+      state.timestamps = { ...current.timestamps };
+    } else {
+      state.stages = { verification: 'pending', approval: 'pending', enrollment: 'pending' };
+      state.timestamps = { verification: null, approval: null, enrollment: null };
+    }
   } catch (err) {
     console.warn('Failed to load state', err);
   }
@@ -77,7 +95,8 @@ function clearState() {
 const form = document.getElementById('applicationForm');
 const toast = document.getElementById('toast');
 const pipelineFill = document.getElementById('pipelineFill');
-const clearStateBtn = document.getElementById('clearState'); // <button id="clearState">Clear saved state</button>
+const clearStateBtn = document.getElementById('clearState');
+const historyListEl = document.getElementById('ticketHistoryList');
 
 const statusEls = {
   verification: document.getElementById('statusVerification'),
@@ -124,7 +143,6 @@ function updatePipelineProgress(){
 }
 
 function resetStages(){
-  // Do NOT overwrite state.stages here; use what is in state
   setBadge(statusEls.verification, state.stages.verification);
   setBadge(statusEls.approval, state.stages.approval);
   setBadge(statusEls.enrollment, state.stages.enrollment);
@@ -163,7 +181,6 @@ function resetStages(){
           }[state.stages.enrollment] || 'Enrollment status') +
       formatTimestamp(state.timestamps.enrollment);
   } else {
-    // No application yet
     metaEls.verification.textContent = 'Awaiting submission';
     metaEls.approval.textContent = 'Requires verified status';
     metaEls.enrollment.textContent = 'Requires approved status';
@@ -172,7 +189,7 @@ function resetStages(){
   updatePipelineProgress();
 }
 
-// --- Ticket viewer (current ticket) ---
+// --- Ticket viewer (current application) ---
 function updateTicketViewer() {
   const viewer = document.getElementById('ticketViewer');
   const summary = document.getElementById('ticketSummary');
@@ -185,20 +202,21 @@ function updateTicketViewer() {
     return;
   }
 
-  const stage = state.stages.enrollment !== 'pending'
+  const s = state.stages;
+  const stage = s.enrollment !== 'pending'
     ? 'Enrollment'
-    : state.stages.approval !== 'pending'
+    : s.approval !== 'pending'
     ? 'Approval'
-    : state.stages.verification !== 'pending'
+    : s.verification !== 'pending'
     ? 'Verification'
     : 'Not started';
 
-  const status = state.stages.enrollment !== 'pending'
-    ? state.stages.enrollment
-    : state.stages.approval !== 'pending'
-    ? state.stages.approval
-    : state.stages.verification !== 'pending'
-    ? state.stages.verification
+  const status = s.enrollment !== 'pending'
+    ? s.enrollment
+    : s.approval !== 'pending'
+    ? s.approval
+    : s.verification !== 'pending'
+    ? s.verification
     : 'pending';
 
   const label = status[0].toUpperCase() + status.slice(1);
@@ -214,32 +232,43 @@ function updateTicketViewer() {
   viewer.style.display = 'block';
 }
 
-// --- Ticket history (multiple tickets) ---
+// --- Ticket history helpers ---
+function getTicketStatusSummary(app) {
+  const s = app.stages;
+  if (s.enrollment !== 'pending') return 'Enrollment: ' + s.enrollment;
+  if (s.approval !== 'pending') return 'Approval: ' + s.approval;
+  if (s.verification !== 'pending') return 'Verification: ' + s.verification;
+  return 'Pending';
+}
+
 function renderTicketHistory() {
   const historySection = document.getElementById('ticketHistory');
   const listEl = document.getElementById('ticketHistoryList');
-
   if (!historySection || !listEl) return;
 
   listEl.innerHTML = '';
 
-  if (!state.applications || state.applications.length === 0) {
+  if (!state.applications.length) {
     historySection.style.display = 'none';
     return;
   }
 
-  // Newest first
-  const items = [...state.applications].slice().reverse();
+  const items = [...state.applications].slice().reverse(); // newest first
 
   items.forEach(app => {
     const li = document.createElement('li');
     li.className = 'ticket-history-item';
+    li.dataset.ticketId = app.id;
+
+    const isActive = state.application && state.application.id === app.id;
+    if (isActive) li.classList.add('active');
 
     li.innerHTML = `
       <div class="ticket-line">
         <span class="ticket-id">${app.id}</span>
         <span class="ticket-name">${app.name}</span>
         <span class="ticket-course">${app.course}</span>
+        <span class="ticket-status-pill">${getTicketStatusSummary(app)}</span>
         <span class="ticket-time">${new Date(app.submittedAt).toLocaleString()}</span>
       </div>
     `;
@@ -248,6 +277,21 @@ function renderTicketHistory() {
   });
 
   historySection.style.display = 'block';
+}
+
+function setCurrentApplicationById(ticketId) {
+  const found = state.applications.find(app => app.id === ticketId);
+  if (!found) return;
+
+  state.application = found;
+  state.stages = { ...found.stages };
+  state.timestamps = { ...found.timestamps };
+
+  resetStages();
+  updateTicketViewer();
+  renderTicketHistory();
+  saveState();
+  showToast('Switched to application: ' + found.id);
 }
 
 // --- Form submission ---
@@ -267,14 +311,24 @@ form.addEventListener('submit', (e)=>{
   const newApplication = {
     id: 'APP-' + Math.random().toString(36).slice(2,8).toUpperCase(),
     name, email, phone, course,
-    submittedAt: new Date().toISOString()
+    submittedAt: new Date().toISOString(),
+    stages: {
+      verification: 'pending',
+      approval: 'pending',
+      enrollment: 'pending'
+    },
+    timestamps: {
+      verification: null,
+      approval: null,
+      enrollment: null
+    }
   };
 
   state.application = newApplication;
   state.applications.push(newApplication);
 
-  state.stages = { verification:'pending', approval:'pending', enrollment:'pending' };
-  state.timestamps = { verification:null, approval:null, enrollment:null };
+  state.stages = { ...newApplication.stages };
+  state.timestamps = { ...newApplication.timestamps };
 
   resetStages();
   saveState();
@@ -282,9 +336,22 @@ form.addEventListener('submit', (e)=>{
   renderTicketHistory();
   showToast('Application submitted: ' + state.application.id);
 
-  // Auto-clear the form fields
+  // Clear form fields visually
   form.reset();
 });
+
+// --- Update current app helper ---
+function syncCurrentApplicationToArray() {
+  if (!state.application) return;
+  const idx = state.applications.findIndex(a => a.id === state.application.id);
+  if (idx !== -1) {
+    state.applications[idx] = {
+      ...state.application,
+      stages: { ...state.stages },
+      timestamps: { ...state.timestamps }
+    };
+  }
+}
 
 // --- Verification ---
 applyVerificationBtn.addEventListener('click', ()=>{
@@ -292,7 +359,7 @@ applyVerificationBtn.addEventListener('click', ()=>{
     showToast('Submit an application first');
     return;
   }
-  const action = verificationSelect.value; // verified | rejected | waitlisted
+  const action = verificationSelect.value;
   state.stages.verification = action;
   state.timestamps.verification = new Date().toLocaleString();
 
@@ -303,7 +370,6 @@ applyVerificationBtn.addEventListener('click', ()=>{
     waitlisted: 'Waitlisted at verification'
   }[action] + formatTimestamp(state.timestamps.verification);
 
-  // Gate next stage
   if(action === 'verified'){
     metaEls.approval.textContent =
       'Ready for Dean/Principal review' + formatTimestamp(state.timestamps.approval);
@@ -319,6 +385,7 @@ applyVerificationBtn.addEventListener('click', ()=>{
     metaEls.enrollment.textContent = 'Requires approved status';
   }
 
+  syncCurrentApplicationToArray();
   updatePipelineProgress();
   saveState();
   updateTicketViewer();
@@ -337,7 +404,7 @@ applyApprovalBtn.addEventListener('click', ()=>{
     return;
   }
 
-  const action = approvalSelect.value; // approved | rejected | waitlisted
+  const action = approvalSelect.value;
   state.stages.approval = action;
   state.timestamps.approval = new Date().toLocaleString();
 
@@ -348,7 +415,6 @@ applyApprovalBtn.addEventListener('click', ()=>{
     waitlisted: 'Waitlisted at approval'
   }[action] + formatTimestamp(state.timestamps.approval);
 
-  // Gate enrollment
   if(action === 'approved'){
     metaEls.enrollment.textContent =
       'Ready for Registrar enrollment' + formatTimestamp(state.timestamps.enrollment);
@@ -360,6 +426,7 @@ applyApprovalBtn.addEventListener('click', ()=>{
     metaEls.enrollment.textContent = 'Requires approved status';
   }
 
+  syncCurrentApplicationToArray();
   updatePipelineProgress();
   saveState();
   updateTicketViewer();
@@ -378,7 +445,7 @@ applyEnrollmentBtn.addEventListener('click', ()=>{
     return;
   }
 
-  const action = enrollmentSelect.value; // enrolled | rejected
+  const action = enrollmentSelect.value;
   state.stages.enrollment = action;
   state.timestamps.enrollment = new Date().toLocaleString();
 
@@ -388,6 +455,7 @@ applyEnrollmentBtn.addEventListener('click', ()=>{
     rejected: 'Rejected at enrollment'
   }[action] + formatTimestamp(state.timestamps.enrollment);
 
+  syncCurrentApplicationToArray();
   updatePipelineProgress();
   saveState();
   updateTicketViewer();
@@ -397,13 +465,13 @@ applyEnrollmentBtn.addEventListener('click', ()=>{
 
 // --- Reset ---
 form.addEventListener('reset', ()=>{
+  // Do not clear history; just clear current in-memory stages
   state.application = null;
   state.stages = { verification:'pending', approval:'pending', enrollment:'pending' };
   state.timestamps = { verification:null, approval:null, enrollment:null };
   resetStages();
   saveState();
   updateTicketViewer();
-  // history is kept; do NOT clear state.applications here
   renderTicketHistory();
   showToast('Form reset');
 });
@@ -411,6 +479,16 @@ form.addEventListener('reset', ()=>{
 // --- Clear saved state button ---
 if (clearStateBtn) {
   clearStateBtn.addEventListener('click', clearState);
+}
+
+// --- Ticket History click (select ticket) ---
+if (historyListEl) {
+  historyListEl.addEventListener('click', (e) => {
+    const li = e.target.closest('.ticket-history-item');
+    if (!li) return;
+    const id = li.dataset.ticketId;
+    setCurrentApplicationById(id);
+  });
 }
 
 // --- Init ---
