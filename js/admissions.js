@@ -294,6 +294,14 @@ function setCurrentApplicationById(ticketId) {
   showToast('Switched to application: ' + found.id);
 }
 
+function updateBodyTicketActiveFlag() {
+  if (state.application) {
+    document.body.classList.add('ticket-active');
+  } else {
+    document.body.classList.remove('ticket-active');
+  }
+}
+
 // --- Form submission ---
 form.addEventListener('submit', (e)=>{
   e.preventDefault();
