@@ -271,10 +271,8 @@ form.addEventListener('submit', (e)=>{
   };
 
   state.application = newApplication;
-  // push into applications list (for history)
   state.applications.push(newApplication);
 
-  // reset stage statuses and timestamps
   state.stages = { verification:'pending', approval:'pending', enrollment:'pending' };
   state.timestamps = { verification:null, approval:null, enrollment:null };
 
@@ -283,6 +281,9 @@ form.addEventListener('submit', (e)=>{
   updateTicketViewer();
   renderTicketHistory();
   showToast('Application submitted: ' + state.application.id);
+
+  // Auto-clear the form fields
+  form.reset();
 });
 
 // --- Verification ---
