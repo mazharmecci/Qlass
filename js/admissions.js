@@ -292,14 +292,20 @@ function updateSnapshot() {
   if (rejEl)   rejEl.textContent = rejected;
   if (yearEl)  yearEl.textContent = thisYear;
 
+  let courseFilter = null; // when set, history shows only that course
+
   if (byCourseWrap) {
     byCourseWrap.innerHTML = '';
     Object.entries(courseCounts)
       .sort((a,b) => b[1] - a[1])
-      .slice(0, 6) // show top 6 courses/classes
+      .slice(0, 6)
       .forEach(([course, count]) => {
         const span = document.createElement('span');
         span.className = 'snapshot-chip';
+        span.dataset.course = course;
+        if (courseFilter === course) {
+          span.classList.add('active');
+        }
         span.textContent = `${course}: ${count}`;
         byCourseWrap.appendChild(span);
       });
@@ -330,10 +336,9 @@ function renderTicketHistory() {
   }
 
   const query = ticketSearchInput ? ticketSearchInput.value.trim().toLowerCase() : '';
+  let items = [...state.applications].slice().reverse(); // newest first
 
-  // newest first
-  let items = [...state.applications].slice().reverse();
-
+  // text search filter
   if (query) {
     items = items.filter(app => {
       const id = app.id.toLowerCase();
@@ -342,8 +347,13 @@ function renderTicketHistory() {
     });
   }
 
+  // course pill filter
+  if (courseFilter) {
+    items = items.filter(app => (app.course || '') === courseFilter);
+  }
+
   if (!items.length) {
-    listEl.innerHTML = '<li class="ticket-history-item empty">No tickets match your search.</li>';
+    listEl.innerHTML = '<li class="ticket-history-item empty">No tickets match your filters.</li>';
     historySection.style.display = 'block';
     return;
   }
@@ -453,6 +463,27 @@ function syncCurrentApplicationToArray() {
       timestamps: { ...state.timestamps }
     };
   }
+}
+
+const snapByCourseWrap = document.getElementById('snapByCourse');
+if (snapByCourseWrap) {
+  snapByCourseWrap.addEventListener('click', (e) => {
+    const chip = e.target.closest('.snapshot-chip');
+    if (!chip) return;
+
+    const course = chip.dataset.course;
+    // Toggle: clicking same chip again clears filter
+    if (courseFilter === course) {
+      courseFilter = null;
+    } else {
+      courseFilter = course;
+    }
+
+    // re-render pills to update active class
+    updateSnapshot();
+    // re-render history with new filter
+    renderTicketHistory();
+  });
 }
 
 // --- Verification ---
