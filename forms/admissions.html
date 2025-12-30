@@ -487,10 +487,45 @@ body {
       </div>
     </section>
 
-    <!-- Ticket viewer flow -->
-    <section class="card" id="ticketViewer" style="display:none;">
-      <h2 class="section-title">Current Application</h2>
-      <div class="meta" id="ticketSummary"></div>
+      <!-- Ticket viewer flow -->
+      <section class="card" id="ticketViewer" style="display:none;">
+        <h2 class="section-title">Current Application</h2>
+        <div class="meta" id="ticketSummary"></div>
+      </section>
+  
+     <!-- Current year dashboard figures -->
+     <section class="card" id="admissionSnapshot" style="display:none;">
+      <h2 class="section-title">Admissions Snapshot</h2>
+      <div class="snapshot-grid">
+        <div class="snapshot-item">
+          <div class="snapshot-label">Total applications</div>
+          <div class="snapshot-value" id="snapTotal">0</div>
+        </div>
+        <div class="snapshot-item">
+          <div class="snapshot-label">Verified</div>
+          <div class="snapshot-value" id="snapVerified">0</div>
+        </div>
+        <div class="snapshot-item">
+          <div class="snapshot-label">Approved</div>
+          <div class="snapshot-value" id="snapApproved">0</div>
+        </div>
+        <div class="snapshot-item">
+          <div class="snapshot-label">Enrolled</div>
+          <div class="snapshot-value" id="snapEnrolled">0</div>
+        </div>
+        <div class="snapshot-item">
+          <div class="snapshot-label">Rejected</div>
+          <div class="snapshot-value" id="snapRejected">0</div>
+        </div>
+        <div class="snapshot-item">
+          <div class="snapshot-label">This year</div>
+          <div class="snapshot-value" id="snapThisYear">0</div>
+        </div>
+      </div>
+    
+      <div class="snapshot-subgrid" id="snapByCourse">
+        <!-- e.g. Grade 1: 4 • B.Sc CS: 3 -->
+      </div>
     </section>
 
     <section class="card" id="ticketHistory" style="display:none;">
