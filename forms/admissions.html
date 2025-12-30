@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Qlass – Admissions Workflow</title>
+  <link rel="stylesheet" href="../css/style.css"> <!-- optional global stylesheet -->
+</head>
+<body>
+  <header>
+    <h1>Qlass – Admissions</h1>
+    <nav>
+      <a href="../index.html">Dashboard</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Application form -->
+    <section class="card">
+      <h2 class="section-title">Application form</h2>
+      <form id="applicationForm" novalidate>
+        <div class="row">
+          <div>
+            <label for="studentName">Student name</label>
+            <input id="studentName" name="studentName" type="text" required/>
+          </div>
+          <div>
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" required/>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="phone">Phone</label>
+            <input id="phone" name="phone" type="tel" required/>
+          </div>
+          <div>
+            <label for="course">Course applied for</label>
+            <select id="course" name="course" required>
+              <option value="">Select a course</option>
+              <option>B.Sc Computer Science</option>
+              <option>B.Com</option>
+              <option>B.A English</option>
+              <option>MBA</option>
+              <option>M.Sc Data Science</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="docs">Upload documents</label>
+        <input id="docs" name="docs" type="file" multiple/>
+
+        <label for="notes">Applicant notes (optional)</label>
+        <textarea id="notes" name="notes" rows="3"></textarea>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Submit application</button>
+          <button type="reset" class="btn btn-ghost">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Pipeline -->
+    <section class="pipeline">
+      <div class="pipeline-track"></div>
+      <div id="pipelineFill" class="pipeline-fill"></div>
+
+      <h2 class="section-title">Workflow stages</h2>
+      <div class="stages">
+        <div class="stage" id="stageVerification">
+          <h3>Verification</h3>
+          <span id="statusVerification" class="status-badge pending">Pending</span>
+          <div id="metaVerification" class="meta">Awaiting submission</div>
+          <div class="controls">
+            <select id="verificationAction" class="select">
+              <option value="verified">Mark as Verified</option>
+              <option value="rejected">Reject</option>
+              <option value="waitlisted">Waitlist</option>
+            </select>
+            <button class="btn btn-ghost" id="applyVerification">Apply</button>
+          </div>
+        </div>
+
+        <div class="stage" id="stageApproval">
+          <h3>Approval</h3>
+          <span id="statusApproval" class="status-badge pending">Pending</span>
+          <div id="metaApproval" class="meta">Requires verified status</div>
+          <div class="controls">
+            <select id="approvalAction" class="select">
+              <option value="approved">Approve</option>
+              <option value="rejected">Reject</option>
+              <option value="waitlisted">Waitlist</option>
+            </select>
+            <button class="btn btn-ghost" id="applyApproval">Apply</button>
+          </div>
+        </div>
+
+        <div class="stage" id="stageEnrollment">
+          <h3>Enrollment</h3>
+          <span id="statusEnrollment" class="status-badge pending">Pending</span>
+          <div id="metaEnrollment" class="meta">Requires approved status</div>
+          <div class="controls">
+            <select id="enrollmentAction" class="select">
+              <option value="enrolled">Enroll</option>
+              <option value="rejected">Reject</option>
+            </select>
+            <button class="btn btn-ghost" id="applyEnrollment">Apply</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Admissions workflow logic -->
+  <script src="../js/admissions.js"></script>
+</body>
+</html>
