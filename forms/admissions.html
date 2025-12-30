@@ -389,6 +389,30 @@ body {
   border: 1px solid rgba(191, 219, 254, 0.9);
 }
 
+.snapshot-chip {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.08);
+  color: #1d4ed8;
+  border: 1px solid rgba(191, 219, 254, 0.9);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+              transform 0.1s ease;
+}
+
+.snapshot-chip:hover {
+  background: rgba(59, 130, 246, 0.18);
+  transform: translateY(-1px);
+}
+
+/* active course filter */
+.snapshot-chip.active {
+  background: rgba(22, 163, 74, 0.18);   /* light green */
+  color: #166534;
+  border-color: #16a34a;
+}
+
 </style>
   
 </head>
