@@ -341,6 +341,54 @@ body {
   }
 }
 
+#admissionSnapshot {
+  margin-top: 1rem;
+}
+
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.snapshot-item {
+  padding: 0.6rem 0.75rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(209, 213, 219, 0.9);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+.snapshot-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.15rem;
+}
+
+.snapshot-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* chips for per-course counts */
+.snapshot-subgrid {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.snapshot-chip {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.08);
+  color: #1d4ed8;
+  border: 1px solid rgba(191, 219, 254, 0.9);
+}
+
 </style>
   
 </head>
