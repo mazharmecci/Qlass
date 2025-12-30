@@ -3,7 +3,7 @@
 // --- In-memory state ---
 const state = {
   application: null,   // current / active application
-  applications: [],    // future: support multiple applications
+  applications: [],    // history / future multi-application UI
   stages: {
     verification: 'pending', // pending | verified | rejected | waitlisted
     approval: 'pending',     // pending | approved | rejected | waitlisted
@@ -68,6 +68,8 @@ function clearState() {
     enrollment: null
   };
   resetStages();
+  updateTicketViewer();
+  renderTicketHistory();
   showToast('Saved state cleared');
 }
 
@@ -170,6 +172,84 @@ function resetStages(){
   updatePipelineProgress();
 }
 
+// --- Ticket viewer (current ticket) ---
+function updateTicketViewer() {
+  const viewer = document.getElementById('ticketViewer');
+  const summary = document.getElementById('ticketSummary');
+
+  if (!viewer || !summary) return;
+
+  if (!state.application) {
+    viewer.style.display = 'none';
+    summary.innerHTML = '';
+    return;
+  }
+
+  const stage = state.stages.enrollment !== 'pending'
+    ? 'Enrollment'
+    : state.stages.approval !== 'pending'
+    ? 'Approval'
+    : state.stages.verification !== 'pending'
+    ? 'Verification'
+    : 'Not started';
+
+  const status = state.stages.enrollment !== 'pending'
+    ? state.stages.enrollment
+    : state.stages.approval !== 'pending'
+    ? state.stages.approval
+    : state.stages.verification !== 'pending'
+    ? state.stages.verification
+    : 'pending';
+
+  const label = status[0].toUpperCase() + status.slice(1);
+
+  summary.innerHTML = `
+    <strong>Ticket ID:</strong> ${state.application.id}<br>
+    <strong>Student:</strong> ${state.application.name}<br>
+    <strong>Course:</strong> ${state.application.course}<br>
+    <strong>Current Stage:</strong> ${stage}<br>
+    <strong>Status:</strong> <span class="status-badge ${status}">${label}</span>
+  `;
+
+  viewer.style.display = 'block';
+}
+
+// --- Ticket history (multiple tickets) ---
+function renderTicketHistory() {
+  const historySection = document.getElementById('ticketHistory');
+  const listEl = document.getElementById('ticketHistoryList');
+
+  if (!historySection || !listEl) return;
+
+  listEl.innerHTML = '';
+
+  if (!state.applications || state.applications.length === 0) {
+    historySection.style.display = 'none';
+    return;
+  }
+
+  // Newest first
+  const items = [...state.applications].slice().reverse();
+
+  items.forEach(app => {
+    const li = document.createElement('li');
+    li.className = 'ticket-history-item';
+
+    li.innerHTML = `
+      <div class="ticket-line">
+        <span class="ticket-id">${app.id}</span>
+        <span class="ticket-name">${app.name}</span>
+        <span class="ticket-course">${app.course}</span>
+        <span class="ticket-time">${new Date(app.submittedAt).toLocaleString()}</span>
+      </div>
+    `;
+
+    listEl.appendChild(li);
+  });
+
+  historySection.style.display = 'block';
+}
+
 // --- Form submission ---
 form.addEventListener('submit', (e)=>{
   e.preventDefault();
@@ -191,7 +271,7 @@ form.addEventListener('submit', (e)=>{
   };
 
   state.application = newApplication;
-  // push into applications list (for future multi-application UI)
+  // push into applications list (for history)
   state.applications.push(newApplication);
 
   // reset stage statuses and timestamps
@@ -200,6 +280,8 @@ form.addEventListener('submit', (e)=>{
 
   resetStages();
   saveState();
+  updateTicketViewer();
+  renderTicketHistory();
   showToast('Application submitted: ' + state.application.id);
 });
 
@@ -238,6 +320,8 @@ applyVerificationBtn.addEventListener('click', ()=>{
 
   updatePipelineProgress();
   saveState();
+  updateTicketViewer();
+  renderTicketHistory();
   showToast('Verification: ' + action);
 });
 
@@ -277,6 +361,8 @@ applyApprovalBtn.addEventListener('click', ()=>{
 
   updatePipelineProgress();
   saveState();
+  updateTicketViewer();
+  renderTicketHistory();
   showToast('Approval: ' + action);
 });
 
@@ -303,45 +389,10 @@ applyEnrollmentBtn.addEventListener('click', ()=>{
 
   updatePipelineProgress();
   saveState();
+  updateTicketViewer();
+  renderTicketHistory();
   showToast('Enrollment: ' + action);
 });
-
-// --- Ticket viewer logic ---
-
-function updateTicketViewer() {
-  const viewer = document.getElementById('ticketViewer');
-  const summary = document.getElementById('ticketSummary');
-
-  if (!state.application) {
-    viewer.style.display = 'none';
-    return;
-  }
-
-  const stage = state.stages.enrollment !== 'pending'
-    ? 'Enrollment'
-    : state.stages.approval !== 'pending'
-    ? 'Approval'
-    : state.stages.verification !== 'pending'
-    ? 'Verification'
-    : 'Not started';
-
-  const status = state.stages.enrollment !== 'pending'
-    ? state.stages.enrollment
-    : state.stages.approval !== 'pending'
-    ? state.stages.approval
-    : state.stages.verification !== 'pending'
-    ? state.stages.verification
-    : 'pending';
-
-  summary.innerHTML = `
-    <strong>Ticket ID:</strong> ${state.application.id}<br>
-    <strong>Student:</strong> ${state.application.name}<br>
-    <strong>Course:</strong> ${state.application.course}<br>
-    <strong>Current Stage:</strong> ${stage}<br>
-    <strong>Status:</strong> <span class="status-badge ${status}">${status[0].toUpperCase() + status.slice(1)}</span>
-  `;
-  viewer.style.display = 'block';
-}
 
 // --- Reset ---
 form.addEventListener('reset', ()=>{
@@ -350,6 +401,9 @@ form.addEventListener('reset', ()=>{
   state.timestamps = { verification:null, approval:null, enrollment:null };
   resetStages();
   saveState();
+  updateTicketViewer();
+  // history is kept; do NOT clear state.applications here
+  renderTicketHistory();
   showToast('Form reset');
 });
 
@@ -361,6 +415,8 @@ if (clearStateBtn) {
 // --- Init ---
 loadState();
 resetStages();
+updateTicketViewer();
+renderTicketHistory();
 if (state.application) {
   showToast('Resumed application: ' + state.application.id);
 }
