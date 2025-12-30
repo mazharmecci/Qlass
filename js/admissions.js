@@ -118,6 +118,14 @@ const applyApprovalBtn = document.getElementById('applyApproval');
 const applyEnrollmentBtn = document.getElementById('applyEnrollment');
 const ticketSearchInput = document.getElementById('ticketSearch');
 
+// --- Live search above admissions history ---
+
+if (ticketSearchInput) {
+  ticketSearchInput.addEventListener('input', () => {
+    renderTicketHistory();
+  });
+}
+
 // --- Helpers ---
 function showToast(message){
   toast.textContent = message;
