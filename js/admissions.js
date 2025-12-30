@@ -116,6 +116,7 @@ const enrollmentSelect = document.getElementById('enrollmentAction');
 const applyVerificationBtn = document.getElementById('applyVerification');
 const applyApprovalBtn = document.getElementById('applyApproval');
 const applyEnrollmentBtn = document.getElementById('applyEnrollment');
+const ticketSearchInput = document.getElementById('ticketSearch');
 
 // --- Helpers ---
 function showToast(message){
@@ -253,7 +254,24 @@ function renderTicketHistory() {
     return;
   }
 
-  const items = [...state.applications].slice().reverse(); // newest first
+  const query = ticketSearchInput ? ticketSearchInput.value.trim().toLowerCase() : '';
+
+  // newest first
+  let items = [...state.applications].slice().reverse();
+
+  if (query) {
+    items = items.filter(app => {
+      const id = app.id.toLowerCase();
+      const name = (app.name || '').toLowerCase();
+      return id.includes(query) || name.includes(query);
+    });
+  }
+
+  if (!items.length) {
+    listEl.innerHTML = '<li class="ticket-history-item empty">No tickets match your search.</li>';
+    historySection.style.display = 'block';
+    return;
+  }
 
   items.forEach(app => {
     const li = document.createElement('li');
