@@ -16,6 +16,8 @@ const state = {
   }
 };
 
+let courseFilter = null; // when set, history shows only that course
+
 // --- Persistence (localStorage) ---
 const STORAGE_KEY = 'qlass_admissions_state_v2';
 
@@ -199,7 +201,6 @@ function resetStages(){
 
   updatePipelineProgress();
 }
-let courseFilter = null; // when set, history shows only that course
 
 // --- Ticket viewer (current application) ---
 function updateTicketViewer() {
