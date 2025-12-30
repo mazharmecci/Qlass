@@ -241,6 +241,71 @@ function updateTicketViewer() {
   viewer.style.display = 'block';
 }
 
+// --- Ticket dashboard ---
+function updateSnapshot() {
+  const snapSection = document.getElementById('admissionSnapshot');
+  if (!snapSection) return;
+
+  const totalEl      = document.getElementById('snapTotal');
+  const verEl        = document.getElementById('snapVerified');
+  const apprEl       = document.getElementById('snapApproved');
+  const enrEl        = document.getElementById('snapEnrolled');
+  const rejEl        = document.getElementById('snapRejected');
+  const yearEl       = document.getElementById('snapThisYear');
+  const byCourseWrap = document.getElementById('snapByCourse');
+
+  const apps = state.applications || [];
+  if (!apps.length) {
+    snapSection.style.display = 'none';
+    return;
+  }
+
+  const nowYear = new Date().getFullYear();
+  let total = 0, verified = 0, approved = 0, enrolled = 0, rejected = 0, thisYear = 0;
+  const courseCounts = {};
+
+  apps.forEach(app => {
+    total++;
+
+    const s = app.stages || {};
+    if (s.verification === 'verified') verified++;
+    if (s.approval === 'approved') approved++;
+    if (s.enrollment === 'enrolled') enrolled++;
+
+    if (s.verification === 'rejected' || s.approval === 'rejected' || s.enrollment === 'rejected') {
+      rejected++;
+    }
+
+    const submittedYear = app.submittedAt ? new Date(app.submittedAt).getFullYear() : null;
+    if (submittedYear === nowYear) thisYear++;
+
+    const key = app.course || 'Unknown';
+    courseCounts[key] = (courseCounts[key] || 0) + 1;
+  });
+
+  if (totalEl) totalEl.textContent = total;
+  if (verEl)   verEl.textContent = verified;
+  if (apprEl)  apprEl.textContent = approved;
+  if (enrEl)   enrEl.textContent = enrolled;
+  if (rejEl)   rejEl.textContent = rejected;
+  if (yearEl)  yearEl.textContent = thisYear;
+
+  if (byCourseWrap) {
+    byCourseWrap.innerHTML = '';
+    Object.entries(courseCounts)
+      .sort((a,b) => b[1] - a[1])
+      .slice(0, 6) // show top 6 courses/classes
+      .forEach(([course, count]) => {
+        const span = document.createElement('span');
+        span.className = 'snapshot-chip';
+        span.textContent = `${course}: ${count}`;
+        byCourseWrap.appendChild(span);
+      });
+  }
+
+  snapSection.style.display = 'block';
+}
+
 // --- Ticket history helpers ---
 function getTicketStatusSummary(app) {
   const s = app.stages;
