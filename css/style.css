@@ -1,0 +1,251 @@
+/* ================================
+   Qlass Global Stylesheet
+   Supports: Admissions + all workflows
+   ================================ */
+
+/* ---------- 1. Root Variables ---------- */
+:root {
+  --brand-blue: #1a3d7c;
+  --brand-blue-dark: #163366;
+  --brand-gold: #d4af37;
+  --bg: #f9fafc;
+  --card-bg: #ffffff;
+  --text: #222;
+  --muted: #555;
+  --shadow: 0 6px 12px rgba(0,0,0,0.08);
+
+  /* Status colors */
+  --pending: #8a8f9c;
+  --verified: #2f6fed;
+  --approved: #22a06b;
+  --waitlisted: #b8860b;
+  --rejected: #d42f3a;
+  --enrolled: #0f9d58;
+  --focus: #7aa2ff;
+}
+
+/* ---------- 2. Base Reset ---------- */
+* { box-sizing: border-box; }
+body {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- 3. Header ---------- */
+header {
+  background: var(--brand-blue);
+  color: #fff;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+header h1 {
+  font-size: 1.4rem;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+header nav a {
+  color: #fff;
+  text-decoration: none;
+  opacity: 0.9;
+  font-weight: 600;
+}
+header nav a:hover { opacity: 1; }
+
+/* ---------- 4. Layout ---------- */
+main {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+.card {
+  background: var(--card-bg);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+.section-title {
+  margin: 0 0 0.75rem 0;
+  color: var(--brand-blue);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* ---------- 5. Forms ---------- */
+form label {
+  display: block;
+  margin-top: 1rem;
+  font-weight: 600;
+}
+form input,
+form select,
+form textarea {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid #d0d7e3;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+form input:focus,
+form select:focus,
+form textarea:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px rgba(122,162,255,0.2);
+}
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.actions {
+  margin-top: 1.25rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.btn {
+  padding: 0.8rem 1.1rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.btn-primary {
+  background: var(--brand-blue);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--brand-blue-dark);
+  transform: translateY(-1px);
+}
+.btn-ghost {
+  background: #eef3fb;
+  color: var(--brand-blue);
+}
+.btn-ghost:hover {
+  background: #e3ecfb;
+  transform: translateY(-1px);
+}
+
+/* ---------- 6. Workflow Pipeline ---------- */
+.pipeline {
+  margin-top: 2rem;
+  position: relative;
+}
+.pipeline-track {
+  position: absolute;
+  top: 50%;
+  left: 2%;
+  right: 2%;
+  height: 4px;
+  background: #d9e2f0;
+  border-radius: 6px;
+  transform: translateY(-50%);
+}
+.pipeline-fill {
+  position: absolute;
+  top: 50%;
+  left: 2%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--verified), var(--approved));
+  border-radius: 6px;
+  transform: translateY(-50%);
+  width: 0%;
+  transition: width 500ms ease;
+}
+.stages {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
+}
+.stage {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 1rem;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.stage:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 26px rgba(0,0,0,0.10);
+}
+.stage h3 {
+  margin: 0 0 0.4rem 0;
+  color: var(--brand-blue);
+  font-size: 1.05rem;
+}
+.status-badge {
+  display: inline-block;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #fff;
+  transition: background 250ms ease, transform 250ms ease;
+}
+.pending { background: var(--pending); }
+.verified { background: var(--verified); }
+.approved { background: var(--approved); }
+.waitlisted { background: var(--waitlisted); }
+.rejected { background: var(--rejected); }
+.enrolled { background: var(--enrolled); }
+.meta {
+  margin-top: 0.6rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.controls {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.select {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #d0d7e3;
+  border-radius: 10px;
+  background: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---------- 7. Toast Notifications ---------- */
+.toast {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  background: #111827;
+  color: #fff;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 200ms ease, transform 200ms ease;
+  font-weight: 600;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- 8. Responsive ---------- */
+@media (max-width: 720px) {
+  .row { grid-template-columns: 1fr; }
+  .stages { grid-template-columns: 1fr; }
+  .pipeline-track, .pipeline-fill { display: none; }
+}
