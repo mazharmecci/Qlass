@@ -6,6 +6,33 @@
   <title>Qlass – Admissions Workflow</title>
   <link rel="stylesheet" href="../css/style.css" />
 <style>
+
+  /* Highlight Current Application card when a ticket is active */
+#ticketViewer {
+  border-left: 4px solid transparent;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+body.ticket-active #ticketViewer {
+  border-left-color: #16a34a; /* same green as active ticket ID */
+  box-shadow: 0 16px 40px rgba(22, 163, 74, 0.18);
+}
+
+/* Match active ticket line accent */
+.ticket-history-item.active {
+  background: rgba(22, 163, 74, 0.06);
+  border-left: 3px solid #16a34a;
+}
+
+/* Optional: subtle bolding for current-application label */
+#ticketViewer .section-title::after {
+  content: ' • Selected from Ticket History';
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #16a34a;
+  margin-left: 0.3rem;
+}
+
   /* === Ticket history colors === */
 
 .ticket-list {
