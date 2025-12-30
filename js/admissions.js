@@ -86,8 +86,10 @@ function clearState() {
     enrollment: null
   };
   resetStages();
+  saveState();
   updateTicketViewer();
   renderTicketHistory();
+  updateSnapshot();
   showToast('Saved state cleared');
 }
 
@@ -433,6 +435,7 @@ form.addEventListener('submit', (e)=>{
   saveState();
   updateTicketViewer();
   renderTicketHistory();
+  updateSnapshot();
   showToast('Application submitted: ' + state.application.id);
 
   // Clear form fields visually
@@ -489,6 +492,7 @@ applyVerificationBtn.addEventListener('click', ()=>{
   saveState();
   updateTicketViewer();
   renderTicketHistory();
+  updateSnapshot();
   showToast('Verification: ' + action);
 });
 
@@ -595,6 +599,7 @@ loadState();
 resetStages();
 updateTicketViewer();
 renderTicketHistory();
+updateSnapshot();
 if (state.application) {
   showToast('Resumed application: ' + state.application.id);
 }
