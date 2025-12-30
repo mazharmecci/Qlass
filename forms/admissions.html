@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Qlass – Admissions Workflow</title>
-  <link rel="stylesheet" href="../css/style.css"> <!-- optional global stylesheet -->
+  <link rel="stylesheet" href="../css/style.css" />
 </head>
 <body>
   <header>
@@ -22,18 +22,18 @@
         <div class="row">
           <div>
             <label for="studentName">Student name</label>
-            <input id="studentName" name="studentName" type="text" required/>
+            <input id="studentName" name="studentName" type="text" required />
           </div>
           <div>
             <label for="email">Email</label>
-            <input id="email" name="email" type="email">
+            <input id="email" name="email" type="email" />
           </div>
         </div>
 
         <div class="row">
           <div>
             <label for="phone">Phone</label>
-            <input id="phone" name="phone" type="tel" required/>
+            <input id="phone" name="phone" type="tel" required />
           </div>
           <div>
             <label for="course">Course applied for</label>
@@ -55,20 +55,20 @@
               <option>Grade 10</option>
               <option>Grade 11</option>
               <option>Grade 12</option>
-              
+
               <option>B.Sc Computer Science</option>
               <option>B.Sc Mathematics</option>
               <option>B.Sc Physics</option>
               <option>BCA</option>
               <option>BBA</option>
               <option>B.Com</option>
-              <option>B.Com Accounting & Finance</option>
+              <option>B.Com Accounting &amp; Finance</option>
               <option>B.A English</option>
               <option>B.A Economics</option>
               <option>B.A Psychology</option>
               <option>B.Tech Computer Science</option>
               <option>BE Computer Science</option>
-              
+
               <option>MBA</option>
               <option>MCA</option>
               <option>M.Com</option>
@@ -77,13 +77,12 @@
               <option>M.Sc Data Science</option>
               <option>M.Sc Computer Science</option>
               <option>M.Sc Artificial Intelligence</option>
-
             </select>
           </div>
         </div>
 
         <label for="docs">Upload documents</label>
-        <input id="docs" name="docs" type="file" multiple/>
+        <input id="docs" name="docs" type="file" multiple />
 
         <label for="notes">Applicant notes (optional)</label>
         <textarea id="notes" name="notes" rows="3"></textarea>
@@ -91,7 +90,7 @@
         <div class="actions">
           <button type="submit" class="btn btn-primary">Submit application</button>
           <button type="reset" class="btn btn-ghost">Reset</button>
-          <button type="button" id="clearState">Clear saved state</button>
+          <button type="button" id="clearState" class="btn btn-ghost">Clear saved state</button>
         </div>
       </form>
     </section>
@@ -113,7 +112,7 @@
               <option value="rejected">Reject</option>
               <option value="waitlisted">Waitlist</option>
             </select>
-            <button class="btn btn-ghost" id="applyVerification">Apply</button>
+            <button type="button" class="btn btn-ghost" id="applyVerification">Apply</button>
           </div>
         </div>
 
@@ -127,7 +126,7 @@
               <option value="rejected">Reject</option>
               <option value="waitlisted">Waitlist</option>
             </select>
-            <button class="btn btn-ghost" id="applyApproval">Apply</button>
+            <button type="button" class="btn btn-ghost" id="applyApproval">Apply</button>
           </div>
         </div>
 
@@ -140,21 +139,27 @@
               <option value="enrolled">Enroll</option>
               <option value="rejected">Reject</option>
             </select>
-            <button class="btn btn-ghost" id="applyEnrollment">Apply</button>
+            <button type="button" class="btn btn-ghost" id="applyEnrollment">Apply</button>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- Ticket viewer flow -->
+    <section class="card" id="ticketViewer" style="display:none;">
+      <h2 class="section-title">Current Application</h2>
+      <div class="meta" id="ticketSummary"></div>
+    </section>
+
+    <section class="card" id="ticketHistory" style="display:none;">
+      <h2 class="section-title">Ticket History</h2>
+      <div class="meta">
+        <ul id="ticketHistoryList" class="ticket-list"></ul>
       </div>
     </section>
   </main>
 
   <div id="toast" class="toast"></div>
-
-<!-- Ticket viewer flow -->  
-<section class="card" id="ticketViewer" style="display:none;">
-  <h2 class="section-title">Current Application</h2>
-  <div class="meta" id="ticketSummary"></div>
-</section>
-
 
   <!-- Admissions workflow logic -->
   <script src="../js/admissions.js"></script>
