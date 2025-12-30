@@ -5,6 +5,227 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Qlass – Admissions Workflow</title>
   <link rel="stylesheet" href="../css/style.css" />
+<style>
+  /* === Ticket history colors === */
+
+.ticket-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ticket-history-item {
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.ticket-history-item:hover {
+  background: rgba(37, 99, 235, 0.06); /* light blue hover */
+  transform: translateY(-1px);
+}
+
+.ticket-history-item.active {
+  background: rgba(22, 163, 74, 0.06); /* light green for active row */
+  border-left: 3px solid #16a34a;
+}
+
+/* ticket ID colors */
+.ticket-id {
+  color: #1d4ed8;             /* dark blue by default */
+  font-weight: 600;
+}
+
+.ticket-history-item.active .ticket-id {
+  color: #15803d;             /* green when selected */
+}
+
+/* optional pill and line layout */
+.ticket-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.ticket-name,
+.ticket-course,
+.ticket-time {
+  color: #4b5563;
+}
+
+.ticket-status-pill {
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.08);
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* === Glassy theme & workflow stages === */
+
+/* lightened glass variant inspired by your QMS styles */
+:root {
+  --qlass-bg: radial-gradient(circle at top, #e0f2fe 0, #e5e7eb 40%, #e5e7eb 100%);
+  --qlass-surface: rgba(255, 255, 255, 0.86);
+  --qlass-border: 1px solid rgba(148, 163, 184, 0.4);
+  --qlass-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+  --qlass-text-main: #111827;
+  --qlass-text-muted: #6b7280;
+
+  --stage-verify-bg: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(219, 234, 254, 0.9));
+  --stage-verify-accent: #2563eb;
+
+  --stage-approval-bg: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(220, 252, 231, 0.95));
+  --stage-approval-accent: #16a34a;
+
+  --stage-enroll-bg: linear-gradient(135deg, rgba(234, 179, 8, 0.12), rgba(254, 249, 195, 0.95));
+  --stage-enroll-accent: #ca8a04;
+}
+
+/* page background (lighter than QMS) */
+body {
+  background: var(--qlass-bg);
+  color: var(--qlass-text-main);
+}
+
+/* generic cards */
+.card {
+  background: var(--qlass-surface);
+  border: var(--qlass-border);
+  box-shadow: var(--qlass-shadow);
+  backdrop-filter: blur(14px);
+}
+
+/* section titles */
+.section-title {
+  color: #0f172a;
+}
+
+/* meta text */
+.meta {
+  color: var(--qlass-text-muted);
+  font-size: 0.85rem;
+}
+
+/* pipeline container */
+.pipeline {
+  background: transparent;
+}
+
+/* stage cards */
+.stage {
+  border-radius: 16px;
+  padding: 1.1rem 1.25rem;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: var(--qlass-text-main);
+}
+
+/* distinct backgrounds per stage */
+#stageVerification {
+  background: var(--stage-verify-bg);
+}
+
+#stageApproval {
+  background: var(--stage-approval-bg);
+}
+
+#stageEnrollment {
+  background: var(--stage-enroll-bg);
+}
+
+/* stage headings */
+.stage h3 {
+  margin-top: 0;
+  margin-bottom: 0.4rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* status badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 72px;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* base colors for statuses */
+.status-badge.pending {
+  background: rgba(148, 163, 184, 0.16);
+  color: #374151;
+}
+
+.status-badge.verified,
+.status-badge.approved,
+.status-badge.enrolled {
+  background: rgba(22, 163, 74, 0.16);
+  color: #166534;
+}
+
+.status-badge.rejected {
+  background: rgba(239, 68, 68, 0.18);
+  color: #b91c1c;
+}
+
+.status-badge.waitlisted {
+  background: rgba(234, 179, 8, 0.18);
+  color: #a16207;
+}
+
+/* pipeline track + fill */
+.pipeline-track {
+  background: rgba(209, 213, 219, 0.7);
+}
+
+.pipeline-fill {
+  background: linear-gradient(90deg, #3b82f6, #22c55e);
+}
+
+/* buttons & selects */
+.btn {
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #f9fafb;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.6);
+  color: #111827;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+}
+
+.btn-ghost:hover {
+  background: rgba(219, 234, 254, 0.9);
+}
+
+.select {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.7);
+  padding: 0.25rem 0.6rem;
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.9);
+  color: #111827;
+}
+
+</style>
+  
 </head>
 <body>
   <header>
