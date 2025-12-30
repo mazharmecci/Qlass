@@ -306,6 +306,43 @@ applyEnrollmentBtn.addEventListener('click', ()=>{
   showToast('Enrollment: ' + action);
 });
 
+// --- Ticket viewer logic ---
+
+function updateTicketViewer() {
+  const viewer = document.getElementById('ticketViewer');
+  const summary = document.getElementById('ticketSummary');
+
+  if (!state.application) {
+    viewer.style.display = 'none';
+    return;
+  }
+
+  const stage = state.stages.enrollment !== 'pending'
+    ? 'Enrollment'
+    : state.stages.approval !== 'pending'
+    ? 'Approval'
+    : state.stages.verification !== 'pending'
+    ? 'Verification'
+    : 'Not started';
+
+  const status = state.stages.enrollment !== 'pending'
+    ? state.stages.enrollment
+    : state.stages.approval !== 'pending'
+    ? state.stages.approval
+    : state.stages.verification !== 'pending'
+    ? state.stages.verification
+    : 'pending';
+
+  summary.innerHTML = `
+    <strong>Ticket ID:</strong> ${state.application.id}<br>
+    <strong>Student:</strong> ${state.application.name}<br>
+    <strong>Course:</strong> ${state.application.course}<br>
+    <strong>Current Stage:</strong> ${stage}<br>
+    <strong>Status:</strong> <span class="status-badge ${status}">${status[0].toUpperCase() + status.slice(1)}</span>
+  `;
+  viewer.style.display = 'block';
+}
+
 // --- Reset ---
 form.addEventListener('reset', ()=>{
   state.application = null;
