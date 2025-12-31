@@ -423,11 +423,13 @@ if (financeList) {
     const ticketId = btn.dataset.ticketId;
     if (!ticketId) return;
 
+    // --- Save fee details ---
     if (action === 'save-fee') {
       saveFeeForTicket(ticketId);
       return;
     }
 
+    // --- Generate WhatsApp receipt ---
     if (action === 'whatsapp-receipt') {
       const app = getEnrolledApplications().find(a => a.id === ticketId);
       const record = financeRecords[ticketId] || {};
@@ -435,6 +437,34 @@ if (financeList) {
 
       const text = buildReceiptText(app, record);
       showReceiptSnippet(ticketId, text);
+      return;
+    }
+
+    // --- Copy receipt to clipboard ---
+    if (action === 'copy-receipt') {
+      const ticket = financeList.querySelector(`.ticket-item[data-id="${ticketId}"]`);
+      if (!ticket) return;
+
+      const box = ticket.querySelector('.receipt-inline-body[data-receipt-body]');
+      if (!box) return;
+
+      const text = box.innerText || '';
+      if (!text.trim()) {
+        showToast('No receipt to copy');
+        return;
+      }
+
+      try {
+        navigator.clipboard.writeText(text);
+        showToast('Receipt copied to clipboard');
+
+        // Add copied animation pulse
+        btn.classList.add('copied');
+        setTimeout(() => btn.classList.remove('copied'), 800);
+      } catch (err) {
+        console.warn('Clipboard copy failed', err);
+        showToast('Failed to copy receipt');
+      }
     }
   });
 }
