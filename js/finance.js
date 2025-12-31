@@ -91,118 +91,128 @@ function renderFinanceList() {
     return;
   }
 
-financeList.innerHTML = filtered.map(app => {
-  const record = financeRecords[app.id] || {};
-  const items  = record.items || {};
-  const stamps = record.timestamps || {};
-  const paid   = record.paid ? 'Paid' : 'Unpaid';
-  const tsLabel = record.lastUpdated
-    ? new Date(record.lastUpdated).toLocaleString()
-    : '—';
+  financeList.innerHTML = filtered.map(app => {
+    const record = financeRecords[app.id] || {};
+    const items  = record.items || {};
+    const stamps = record.timestamps || {};
+    const paid   = record.paid ? 'Paid' : 'Unpaid';
+    const tsLabel = record.lastUpdated
+      ? new Date(record.lastUpdated).toLocaleString()
+      : '—';
 
-  const statusClass = record.paid ? 'status-paid' : 'status-unpaid';
-  const val = (key) => (items[key] != null ? items[key] : '');
-  const stampText = (key) =>
-    stamps[key] ? new Date(stamps[key]).toLocaleString() : '';
+    const statusClass = record.paid ? 'status-paid' : 'status-unpaid';
 
-  // Safe enrollment timestamp (works for ISO or stored display strings)
-  let enrollmentTs = '—';
-  if (app.timestamps && app.timestamps.enrollment) {
-    const raw = app.timestamps.enrollment;
-    const d = new Date(raw);
-    if (!isNaN(d.getTime())) {
-      enrollmentTs = d.toLocaleString();
+    // Always return a 2-decimal string (or empty when no value set)
+    const val = (key) => {
+      const raw = items[key];
+      if (raw == null || raw === '') return '';
+      const num = Number(raw);
+      if (Number.isNaN(num)) return '';
+      return num.toFixed(2); // keep two decimals
+    };
+
+    const stampText = (key) =>
+      stamps[key] ? new Date(stamps[key]).toLocaleString() : '';
+
+    // Safe enrollment timestamp (works for ISO or stored display strings)
+    let enrollmentTs = '—';
+    if (app.timestamps && app.timestamps.enrollment) {
+      const raw = app.timestamps.enrollment;
+      const d = new Date(raw);
+      if (!isNaN(d.getTime())) {
+        enrollmentTs = d.toLocaleString();
+      }
     }
-  }
 
-  const headerLine =
-    `${app.studentId || 'Pending ID'} ${app.name} ${app.course} - Enrolled on ${enrollmentTs}`;
+    const headerLine =
+      `${app.studentId || 'Pending ID'} ${app.name} ${app.course} - Enrolled on ${enrollmentTs}`;
 
-  const row = (label, key) => `
-    <tr>
-      <td>${label}</td>
-      <td>
-        <div class="fee-cell">
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            class="fee-input"
-            data-field="${key}"
-            value="${val(key)}"
-          >
-          <span class="fee-timestamp">
-            ${stampText(key) ? `• ${stampText(key)}` : ''}
+    const row = (label, key) => `
+      <tr>
+        <td>${label}</td>
+        <td>
+          <div class="fee-cell">
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              class="fee-input"
+              data-field="${key}"
+              value="${val(key)}"
+            >
+            <span class="fee-timestamp">
+              ${stampText(key) ? `• ${stampText(key)}` : ''}
+            </span>
+          </div>
+        </td>
+      </tr>
+    `;
+
+    const total = record.total != null ? Number(record.total) : 0;
+    const totalLabel = total.toFixed(2);
+
+    return `
+      <li class="ticket-item" data-id="${app.id}">
+        <div class="ticket-line ticket-line-top">
+          <span class="ticket-top-summary">${headerLine}</span>
+        </div>
+
+        <div class="ticket-line finance-summary">
+          <span class="summary-pill">
+            Total paid: ₹${totalLabel}
+          </span>
+          <span class="summary-muted">
+            (Course fee & balance to be configured later)
           </span>
         </div>
-      </td>
-    </tr>
-  `;
 
-  const total = record.total != null ? Number(record.total) : 0;
-  const totalLabel = total.toFixed(2);
+        <div class="fee-table-wrapper">
+          <table class="fee-table">
+            <colgroup>
+              <col>
+              <col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${row('Books', 'books')}
+              ${row('Uniform', 'uniform')}
+              ${row('1st Term', 'term1')}
+              ${row('2nd Term', 'term2')}
+              ${row('3rd Term', 'term3')}
+              ${row('4th Term', 'term4')}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>Total</th>
+                <th>
+                  <span class="fee-total">
+                    ₹${totalLabel}
+                  </span>
+                </th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
 
-  return `
-    <li class="ticket-item" data-id="${app.id}">
-      <div class="ticket-line ticket-line-top">
-        <span class="ticket-top-summary">${headerLine}</span>
-      </div>
-
-      <div class="ticket-line finance-summary">
-        <span class="summary-pill">
-          Total paid: ₹${totalLabel}
-        </span>
-        <span class="summary-muted">
-          (Course fee & balance to be configured later)
-        </span>
-      </div>
-
-      <div class="fee-table-wrapper">
-        <table class="fee-table">
-          <colgroup>
-            <col>
-            <col>
-          </colgroup>
-          <thead>
-            <tr>
-              <th>Component</th>
-              <th>Amount (₹)</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${row('Books', 'books')}
-            ${row('Uniform', 'uniform')}
-            ${row('1st Term', 'term1')}
-            ${row('2nd Term', 'term2')}
-            ${row('3rd Term', 'term3')}
-            ${row('4th Term', 'term4')}
-          </tbody>
-          <tfoot>
-            <tr>
-              <th>Total</th>
-              <th>
-                <span class="fee-total">
-                  ₹${totalLabel}
-                </span>
-              </th>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-
-      <div class="ticket-line finance-line">
-        <span class="finance-status ${statusClass}">Fee: ${paid}</span>
-        <span class="finance-time">Last updated: ${tsLabel}</span>
-        <button
-          class="btn btn-primary btn-sm"
-          data-action="save-fee"
-          data-ticket-id="${app.id}">
-          Save fee details
-        </button>
-      </div>
-    </li>
-  `;
-}).join('');
+        <div class="ticket-line finance-line">
+          <span class="finance-status ${statusClass}">Fee: ${paid}</span>
+          <span class="finance-time">Last updated: ${tsLabel}</span>
+          <button
+            class="btn btn-primary btn-sm"
+            data-action="save-fee"
+            data-ticket-id="${app.id}">
+            Save fee details
+          </button>
+        </div>
+      </li>
+    `;
+  }).join('');
+} // <-- this closing brace fixes the Unexpected end of input
 
 // --- Save fee + per-field timestamps for one ticket ---
 function saveFeeForTicket(ticketId) {
