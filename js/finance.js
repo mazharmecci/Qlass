@@ -1,12 +1,24 @@
 // Qlass/js/finance.js
 
+// financeRecords[ticketId] = {
+//   paid: true/false,
+//   items: { books, uniform, term1, term2, term3, term4 },
+//   timestamps: { books, uniform, term1, term2, term3, term4 },
+//   paymentMethods: { books, uniform, term1, term2, term3, term4 }, // 'cash' | 'cheque' | ''
+//   total: number,
+//   lastUpdated: ISO string
+// }
+
+
+// Qlass/js/finance.js
+
 const ADMISSIONS_KEY = 'qlass_admissions_state_v2';
 const FINANCE_KEY    = 'qlass_finance_records_v1';
 
 const toast          = document.getElementById('toast');
 const financeList    = document.getElementById('financeList');
 const searchInput    = document.getElementById('financeSearch');
-const receiptPreview = document.getElementById('receiptPreview');
+const receiptPreview = document.getElementById('receiptPreview'); // make sure this exists in HTML
 
 function showToast(msg){
   if (!toast) return;
@@ -29,19 +41,6 @@ function loadAdmissionsState() {
   }
 }
 
-// Finance records: keyed by ticket ID
-// financeRecords[ticketId] = {
-//   paid: true/false,
-//   items: { books, uniform, term1, term2, term3, term4 },
-//   timestamps: { books, uniform, term1, term2, term3, term4 },
-//   total: number,
-//   lastUpdated: ISO string,
-//   payment: {
-//     method: 'cash' | 'cheque' | '',
-//     chequeNo: string,
-//     bankName: string
-//   }
-// }
 let financeRecords = {};
 try {
   financeRecords = JSON.parse(localStorage.getItem(FINANCE_KEY) || '{}');
@@ -66,9 +65,10 @@ function getEnrolledApplications() {
 
 // --- Receipt helpers ---
 function buildReceiptText(app, record) {
-  const items   = record.items || {};
-  const payment = record.payment || {};
-  const total   = record.total != null ? Number(record.total) : 0;
+  const items          = record.items || {};
+  const timestamps     = record.timestamps || {};
+  const paymentMethods = record.paymentMethods || {};
+  const total          = record.total != null ? Number(record.total) : 0;
 
   const lines = [];
 
@@ -96,32 +96,33 @@ function buildReceiptText(app, record) {
     const raw = items[key];
     const num = raw != null ? Number(raw) : 0;
     if (!Number.isNaN(num) && num > 0) {
-      lines.push(`- ${label}: ₹${num.toFixed(2)}`);
+      const tsRaw = timestamps[key];
+      const method = paymentMethods[key] || '';
+      let tsPart = '';
+      if (tsRaw) {
+        const d = new Date(tsRaw);
+        if (!isNaN(d.getTime())) {
+          tsPart = d.toLocaleString();
+        }
+      }
+
+      let methodPart = '';
+      if (method === 'cash') {
+        methodPart = 'paid by cash';
+      } else if (method === 'cheque') {
+        methodPart = 'paid by cheque';
+      }
+
+      const suffix = [tsPart, methodPart].filter(Boolean).join(' • ');
+      lines.push(`- ${label}: ₹${num.toFixed(2)}${suffix ? ' • ' + suffix : ''}`);
     }
   });
 
   lines.push(`Total paid till date: ₹${total.toFixed(2)}`);
   lines.push('');
-
-  const method = payment.method || '';
-  if (method === 'cash') {
-    lines.push('Payment method: Cash');
-  } else if (method === 'cheque') {
-    lines.push('Payment method: Cheque');
-    if (payment.chequeNo) {
-      lines.push(`Cheque no.: ${payment.chequeNo}`);
-    }
-    if (payment.bankName) {
-      lines.push(`Bank: ${payment.bankName}`);
-    }
-  } else {
-    lines.push('Payment method: Not specified');
-  }
-
-  lines.push('');
   lines.push('This is a system-generated fee summary.');
 
-  return lines.join('\n'); // template-literal style receipt [web:245][web:287]
+  return lines.join('\n'); // template literal style text [web:245][web:287]
 }
 
 function showReceiptSnippet(text) {
@@ -130,7 +131,7 @@ function showReceiptSnippet(text) {
     <div class="receipt-preview-title">WhatsApp receipt preview</div>
     <div class="receipt-preview-body">${text.replace(/\n/g, '<br>')}</div>
     <div class="receipt-actions">
-      Copy this text and paste it into WhatsApp chat with the parent/guardian.
+      Copy this text and paste it into WhatsApp for the parent/guardian.
     </div>
   `;
 }
@@ -169,10 +170,10 @@ function renderFinanceList() {
   }
 
   financeList.innerHTML = filtered.map(app => {
-    const record  = financeRecords[app.id] || {};
-    const items   = record.items || {};
-    const stamps  = record.timestamps || {};
-    const payment = record.payment || {};
+    const record          = financeRecords[app.id] || {};
+    const items           = record.items || {};
+    const stamps          = record.timestamps || {};
+    const paymentMethods  = record.paymentMethods || {};
 
     const paid   = record.paid ? 'Paid' : 'Unpaid';
     const tsLabel = record.lastUpdated
@@ -190,8 +191,23 @@ function renderFinanceList() {
       return num.toFixed(2);
     };
 
-    const stampText = (key) =>
-      stamps[key] ? new Date(stamps[key]).toLocaleString() : '';
+    const methodVal = (key) => paymentMethods[key] || '';
+
+    const stampText = (key) => {
+      const tsRaw = stamps[key];
+      if (!tsRaw) return '';
+      const d = new Date(tsRaw);
+      if (isNaN(d.getTime())) return '';
+      const method = paymentMethods[key] || '';
+      const base = d.toLocaleString();
+      if (method === 'cash') {
+        return `${base} • paid by cash`;
+      }
+      if (method === 'cheque') {
+        return `${base} • paid by cheque`;
+      }
+      return base;
+    };
 
     // Safe enrollment timestamp
     let enrollmentTs = '—';
@@ -219,20 +235,28 @@ function renderFinanceList() {
               data-field="${key}"
               value="${val(key)}"
             >
-            <span class="fee-timestamp">
-              ${stampText(key) ? `• ${stampText(key)}` : ''}
-            </span>
           </div>
+        </td>
+        <td>
+          <select
+            class="payment-method-select"
+            data-field="${key}"
+          >
+            <option value="">Type</option>
+            <option value="cash" ${methodVal(key) === 'cash' ? 'selected' : ''}>Cash</option>
+            <option value="cheque" ${methodVal(key) === 'cheque' ? 'selected' : ''}>Cheque</option>
+          </select>
+        </td>
+        <td>
+          <span class="fee-timestamp">
+            ${stampText(key) ? `• ${stampText(key)}` : ''}
+          </span>
         </td>
       </tr>
     `;
 
     const total = record.total != null ? Number(record.total) : 0;
     const totalLabel = total.toFixed(2);
-
-    const method   = payment.method || '';
-    const chequeNo = payment.chequeNo || '';
-    const bankName = payment.bankName || '';
 
     return `
       <li class="ticket-item" data-id="${app.id}">
@@ -252,13 +276,17 @@ function renderFinanceList() {
         <div class="fee-table-wrapper">
           <table class="fee-table">
             <colgroup>
-              <col>
-              <col>
+              <col> <!-- Component -->
+              <col> <!-- Amount -->
+              <col> <!-- Type -->
+              <col> <!-- Timestamp -->
             </colgroup>
             <thead>
               <tr>
                 <th>Component</th>
                 <th>Amount (₹)</th>
+                <th>Type</th>
+                <th>When / how</th>
               </tr>
             </thead>
             <tbody>
@@ -277,6 +305,7 @@ function renderFinanceList() {
                     ₹${totalLabel}
                   </span>
                 </th>
+                <th colspan="2"></th>
               </tr>
             </tfoot>
           </table>
@@ -292,46 +321,12 @@ function renderFinanceList() {
             Save fee details
           </button>
           <button
-            class="btn btn-ghost btn-sm btn-whatsapp"
+            class="btn btn-outline-success btn-sm btn-whatsapp"
             title="Generate WhatsApp receipt"
             data-action="whatsapp-receipt"
             data-ticket-id="${app.id}">
-            <span class="wa-icon">🟢 WA</span>
+            WA
           </button>
-        </div>
-
-        <div class="ticket-line payment-line">
-          <div class="payment-block">
-            <label>
-              Type of transaction
-              <select class="payment-method" data-ticket-id="${app.id}">
-                <option value="">Select</option>
-                <option value="cash" ${method === 'cash' ? 'selected' : ''}>Cash</option>
-                <option value="cheque" ${method === 'cheque' ? 'selected' : ''}>Cheque</option>
-              </select>
-            </label>
-
-            <div class="cheque-fields ${method === 'cheque' ? '' : 'hidden'}">
-              <label>
-                Cheque no.
-                <input
-                  type="text"
-                  class="cheque-no-input"
-                  data-ticket-id="${app.id}"
-                  value="${chequeNo}"
-                >
-              </label>
-              <label>
-                Bank name
-                <input
-                  type="text"
-                  class="bank-name-input"
-                  data-ticket-id="${app.id}"
-                  value="${bankName}"
-                >
-              </label>
-            </div>
-          </div>
         </div>
       </li>
     `;
@@ -343,15 +338,26 @@ function saveFeeForTicket(ticketId) {
   const itemEl = financeList.querySelector(`.ticket-item[data-id="${ticketId}"]`);
   if (!itemEl) return;
 
-  const prevRecord = financeRecords[ticketId] || {};
-  const prevItems  = prevRecord.items || {};
-  const prevStamps = prevRecord.timestamps || {};
+  const prevRecord       = financeRecords[ticketId] || {};
+  const prevItems        = prevRecord.items || {};
+  const prevStamps       = prevRecord.timestamps || {};
+  const prevMethods      = prevRecord.paymentMethods || {};
 
-  const inputs = itemEl.querySelectorAll('.fee-input');
-  const items = {};
-  const timestamps = {};
+  const inputs           = itemEl.querySelectorAll('.fee-input');
+  const typeSelects      = itemEl.querySelectorAll('.payment-method-select');
+
+  const items            = {};
+  const timestamps       = {};
+  const paymentMethods   = {};
   let total = 0;
   const nowIso = new Date().toISOString();
+
+  // Map field -> method from selects
+  typeSelects.forEach(sel => {
+    const field = sel.dataset.field;
+    if (!field) return;
+    paymentMethods[field] = sel.value || '';
+  });
 
   inputs.forEach(input => {
     const field = input.dataset.field;
@@ -379,28 +385,20 @@ function saveFeeForTicket(ticketId) {
     } else if (prevStamps[field]) {
       timestamps[field] = prevStamps[field];
     }
+
+    // If no explicit method set now, keep previous if any
+    if (!paymentMethods[field] && prevMethods[field]) {
+      paymentMethods[field] = prevMethods[field];
+    }
   });
-
-  // Read payment info
-  const methodSelect  = itemEl.querySelector('.payment-method');
-  const chequeNoInput = itemEl.querySelector('.cheque-no-input');
-  const bankNameInput = itemEl.querySelector('.bank-name-input');
-
-  const method   = methodSelect ? methodSelect.value : '';
-  const chequeNo = chequeNoInput ? chequeNoInput.value.trim() : '';
-  const bankName = bankNameInput ? bankNameInput.value.trim() : '';
 
   financeRecords[ticketId] = {
     paid: total > 0,
     items,
     timestamps,
+    paymentMethods,
     total,
-    lastUpdated: nowIso,
-    payment: {
-      method,
-      chequeNo: method === 'cheque' ? chequeNo : '',
-      bankName: method === 'cheque' ? bankName : ''
-    }
+    lastUpdated: nowIso
   };
 
   localStorage.setItem(FINANCE_KEY, JSON.stringify(financeRecords)); // localStorage pattern [web:185]
@@ -436,24 +434,6 @@ if (financeList) {
 
       const text = buildReceiptText(app, record);
       showReceiptSnippet(text);
-    }
-  });
-
-  // Dynamic show/hide for cheque fields
-  financeList.addEventListener('change', (e) => {
-    const select = e.target.closest('.payment-method');
-    if (!select) return;
-
-    const ticketItem = select.closest('.ticket-item');
-    if (!ticketItem) return;
-
-    const chequeBlock = ticketItem.querySelector('.cheque-fields');
-    if (!chequeBlock) return;
-
-    if (select.value === 'cheque') {
-      chequeBlock.classList.remove('hidden');
-    } else {
-      chequeBlock.classList.add('hidden');
     }
   });
 }
