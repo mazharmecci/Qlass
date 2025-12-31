@@ -14,14 +14,14 @@
       --qlass-text-main: #111827;
       --qlass-text-muted: #6b7280;
     }
-
+    
     body {
       background: radial-gradient(circle at top, #e0f2fe 0, #e5e7eb 40%, #e5e7eb 100%);
       color: var(--qlass-text-main);
       margin: 0;
       font-family: "Segoe UI", system-ui, sans-serif;
     }
-
+    
     /* Header (consistent with Admissions) */
     header {
       position: sticky;
@@ -49,7 +49,7 @@
     .header-title span {
       color: #2563eb;
     }
-
+    
     /* Back link pill */
     .back-link {
       display: inline-flex;
@@ -76,7 +76,7 @@
       transform: translateY(0);
       box-shadow: none;
     }
-
+    
     /* Container + card */
     main.container {
       max-width: 1200px;
@@ -105,7 +105,7 @@
       .card-heading-row { flex-direction: column; align-items: flex-start; }
     }
     .section-title { color: #0f172a; }
-
+    
     /* Search bar (same as Admissions) */
     .ticket-search {
       width: 100%;
@@ -127,7 +127,7 @@
                   0 10px 24px rgba(37, 99, 235, 0.20);
       background: #ffffff;
     }
-
+    
     /* Ticket items */
     .ticket-item {
       padding: 0.6rem 0.8rem;
@@ -148,8 +148,24 @@
       color: var(--qlass-text-muted);
       font-size: 0.85rem;
     }
-
+    
+    /* Top summary line */
+    .ticket-line-top {
+      margin-bottom: 0.35rem;
+    }
+    .ticket-top-summary {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #111827;
+    }
+    
     /* Finance status pills */
+    .finance-line {
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.4rem 0.75rem;
+      margin-top: 0.4rem;
+    }
     .finance-status {
       font-size: 0.78rem;
       font-weight: 600;
@@ -173,7 +189,8 @@
       font-size: 0.78rem;
       border-radius: 999px;
     }
-
+    
+    /* Fee table */
     .fee-table-wrapper {
       margin-top: 0.6rem;
       overflow-x: auto;
@@ -184,6 +201,10 @@
       border-collapse: collapse;
       font-size: 0.8rem;
     }
+    
+    /* Optional: control column widths */
+    .fee-table colgroup col:first-child { width: 60%; }
+    .fee-table colgroup col:last-child  { width: 40%; }
     
     .fee-table th,
     .fee-table td {
@@ -203,8 +224,16 @@
       font-weight: 700;
     }
     
+    /* Compact amount + timestamp cell */
+    .fee-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    
     .fee-input {
-      width: 100%;
+      width: 90px;              /* compact width instead of 100% */
+      max-width: 100px;
       border-radius: 999px;
       border: 1px solid rgba(148, 163, 184, 0.7);
       padding: 0.18rem 0.45rem;
@@ -220,18 +249,14 @@
       box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
     }
     
-    .fee-total {
-      font-weight: 700;
-      color: #111827;
-    }
-
-    .ticket-line-top {
-      margin-bottom: 0.35rem;
+    .fee-timestamp {
+      font-size: 0.7rem;
+      color: #6b7280;
+      white-space: nowrap;
     }
     
-    .ticket-top-summary {
-      font-size: 0.85rem;
-      font-weight: 600;
+    .fee-total {
+      font-weight: 700;
       color: #111827;
     }
 
