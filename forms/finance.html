@@ -287,16 +287,22 @@
 
     .fee-and-receipt {
       display: flex;
+      flex-wrap: wrap;
       gap: 16px;
       align-items: flex-start;
+      max-width: 100%;
+      margin-top: 1rem;
     }
     
     .fee-table-wrapper {
       flex: 2;
+      min-width: 280px;
     }
     
     .receipt-inline {
       flex: 1;
+      min-width: 240px;
+      max-width: 100%;
       border-left: 1px solid #eee;
       padding-left: 12px;
       font-size: 0.85rem;
@@ -309,10 +315,8 @@
     
     .receipt-inline-body {
       white-space: normal;
-    }
-    
-    .receipt-inline-empty {
-      color: #999;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #374151;
     }
 
   </style>
@@ -339,6 +343,48 @@
       </div>
 
       <ul id="financeList" class="ticket-list"></ul>
+
+      <!-- Fee Table + Receipt Preview -->
+      <div class="fee-and-receipt">
+        <div class="fee-table-wrapper">
+          <table class="fee-table">
+            <colgroup>
+              <col />
+              <col />
+            </colgroup>
+            <thead>
+              <tr><th>Component</th><th>Amount (₹)</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="fee-cell">Books</td>
+                <td><input class="fee-input" type="number" value="7500" /></td>
+              </tr>
+              <tr>
+                <td class="fee-cell">Uniform</td>
+                <td><input class="fee-input" type="number" value="0" /></td>
+              </tr>
+              <!-- Add other components here -->
+            </tbody>
+            <tfoot>
+              <tr><th>Total</th><th class="fee-total">₹7500.00</th></tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="receipt-inline">
+          <div class="receipt-inline-title">WhatsApp receipt preview</div>
+          <div class="receipt-inline-body">
+            Student: Inaara Khan (STU-BEN-0001)<br>
+            Course: Grade 3<br><br>
+            Fee components (₹):<br>
+            - Books: ₹7500.00<br>
+            Total paid till date: ₹7500.00<br><br>
+            Payment method: Cash<br><br>
+            This is a system-generated fee summary.
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
