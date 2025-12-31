@@ -3,194 +3,190 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Qlass – Finance Workflow</title>
-  <link rel="stylesheet" href="../css/style.css">
+  <title>Qlass – Finance Workflow</title>  
   
-  <style>/* === Finance page layout (reuses admissions glass theme) === */
-
-/* Finance list items reuse .ticket-list from admissions */
-
-.ticket-item {
-  padding: 0.6rem 0.8rem;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(209, 213, 219, 0.9);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
-  margin-bottom: 0.5rem;
-  transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
-}
-
-.ticket-item:hover {
-  background: rgba(239, 246, 255, 0.9);
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
-}
-
-.ticket-item.empty {
-  text-align: center;
-  color: var(--qlass-text-muted);
-  font-size: 0.85rem;
-}
-
-/* Reuse existing ticket-line style; just ensure spacing for finance row */
-
-.finance-line {
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.4rem 0.75rem;
-  margin-top: 0.25rem;
-}
-
-/* Student ID pill (same as admissions) */
-.ticket-student-id {
-  padding: 0.1rem 0.5rem;
-  border-radius: 999px;
-  background: rgba(34, 197, 94, 0.12);
-  color: #15803d;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-/* Finance status pills */
-
-.finance-status {
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 0.15rem 0.55rem;
-  border-radius: 999px;
-}
-
-.finance-status.status-paid {
-  background: rgba(22, 163, 74, 0.12);
-  color: #166534;
-}
-
-.finance-status.status-unpaid {
-  background: rgba(248, 113, 113, 0.12);
-  color: #b91c1c;
-}
-
-.finance-amount,
-.finance-time {
-  font-size: 0.78rem;
-  color: #4b5563;
-}
-
-/* Small finance button variant reusing .btn / .btn-primary */
-
-.btn-sm {
-  padding: 0.2rem 0.7rem;
-  font-size: 0.78rem;
-}
-
-/* Header alignment (consistent with admissions header-inner/back-link) */
-
-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: linear-gradient(90deg, rgba(248, 250, 252, 0.96), rgba(241, 245, 249, 0.98));
-  border-bottom: 1px solid rgba(148, 163, 184, 0.28);
-  backdrop-filter: blur(14px);
-}
-
-.header-inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0.9rem 1.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.header-title {
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #0f172a;
-}
-
-.header-title span {
-  color: #2563eb;
-}
-
-/* Make finance card width/spacing consistent */
-
-main.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.5rem 1.75rem 2.5rem;
-}
-
-@media (max-width: 640px) {
-  main.container {
-    padding: 1.25rem 1rem 2.25rem;
-  }
-}
-
-/* generic cards */
-.card {
-  background: var(--qlass-surface);
-  border: var(--qlass-border);
-  box-shadow: var(--qlass-shadow);
-  backdrop-filter: blur(14px);
-}
-
-/* section titles */
-.section-title {
-  color: #0f172a;
-}
-
-/* meta text */
-.meta {
-  color: var(--qlass-text-muted);
-  font-size: 0.85rem;
-}
+  <style>
+    .ticket-item {
+      padding: 0.6rem 0.8rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(209, 213, 219, 0.9);
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+      margin-bottom: 0.5rem;
+      transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
     
-.card-heading-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.25rem 0.7rem;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  text-decoration: none;
-  border: 1px solid rgba(148, 163, 184, 0.6);
-  background: rgba(255, 255, 255, 0.85);
-  color: #1f2933;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease,
-              box-shadow 0.15s ease;
-}
-
-.back-link:hover {
-  background: rgba(219, 234, 254, 0.95);    /* light blue hover */
-  border-color: #2563eb;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
-}
-
-.back-link:active {
-  transform: translateY(0);
-  box-shadow: none;
-}
-
-/* On very small screens, stack back + title nicely */
-@media (max-width: 640px) {
-  .card-heading-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
+    .ticket-item:hover {
+      background: rgba(239, 246, 255, 0.9);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+    }
+    
+    .ticket-item.empty {
+      text-align: center;
+      color: var(--qlass-text-muted);
+      font-size: 0.85rem;
+    }
+    
+    /* Reuse existing ticket-line style; just ensure spacing for finance row */
+    
+    .finance-line {
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.4rem 0.75rem;
+      margin-top: 0.25rem;
+    }
+    
+    /* Student ID pill (same as admissions) */
+    .ticket-student-id {
+      padding: 0.1rem 0.5rem;
+      border-radius: 999px;
+      background: rgba(34, 197, 94, 0.12);
+      color: #15803d;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    /* Finance status pills */
+    
+    .finance-status {
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+    }
+    
+    .finance-status.status-paid {
+      background: rgba(22, 163, 74, 0.12);
+      color: #166534;
+    }
+    
+    .finance-status.status-unpaid {
+      background: rgba(248, 113, 113, 0.12);
+      color: #b91c1c;
+    }
+    
+    .finance-amount,
+    .finance-time {
+      font-size: 0.78rem;
+      color: #4b5563;
+    }
+    
+    /* Small finance button variant reusing .btn / .btn-primary */
+    
+    .btn-sm {
+      padding: 0.2rem 0.7rem;
+      font-size: 0.78rem;
+    }
+    
+    /* Header alignment (consistent with admissions header-inner/back-link) */
+    
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: linear-gradient(90deg, rgba(248, 250, 252, 0.96), rgba(241, 245, 249, 0.98));
+      border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+      backdrop-filter: blur(14px);
+    }
+    
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0.9rem 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .header-title {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #0f172a;
+    }
+    
+    .header-title span {
+      color: #2563eb;
+    }
+    
+    /* Make finance card width/spacing consistent */
+    
+    main.container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1.75rem 2.5rem;
+    }
+    
+    @media (max-width: 640px) {
+      main.container {
+        padding: 1.25rem 1rem 2.25rem;
+      }
+    }
+    
+    /* generic cards */
+    .card {
+      background: var(--qlass-surface);
+      border: var(--qlass-border);
+      box-shadow: var(--qlass-shadow);
+      backdrop-filter: blur(14px);
+    }
+    
+    /* section titles */
+    .section-title {
+      color: #0f172a;
+    }
+    
+    /* meta text */
+    .meta {
+      color: var(--qlass-text-muted);
+      font-size: 0.85rem;
+    }
+        
+    .card-heading-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      text-decoration: none;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(255, 255, 255, 0.85);
+      color: #1f2933;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease,
+                  box-shadow 0.15s ease;
+    }
+    
+    .back-link:hover {
+      background: rgba(219, 234, 254, 0.95);    /* light blue hover */
+      border-color: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
+    }
+    
+    .back-link:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+    
+    /* On very small screens, stack back + title nicely */
+    @media (max-width: 640px) {
+      .card-heading-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
 
 </style>
 </head>
