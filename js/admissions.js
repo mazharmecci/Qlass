@@ -104,7 +104,7 @@ function getNextStudentId() {
   localStorage.setItem(STUDENT_SEQ_KEY, String(next));
 
   const padded = String(next).padStart(4, '0'); // 0001, 0002 ...
-  return `STU-BEN-${padded}`;
+  return `STU-BEN-${padded}`; // uses padStart pattern [web:189][web:190]
 }
 
 // --- Elements ---
