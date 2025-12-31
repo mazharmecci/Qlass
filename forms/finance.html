@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Qlass – Finance Workflow</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <h1 class="header-title">Qlass – <span>Finance</span></h1>
+      <nav>
+        <a href="../index.html" class="back-link">‹ Back to dashboard</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2 class="section-title">Fee Collection</h2>
+
+      <div class="meta" style="margin-bottom:0.6rem;">
+        <input
+          type="search"
+          id="financeSearch"
+          class="ticket-search"
+          placeholder="Search by student name, Student ID or ticket ID..."
+          autocomplete="off"
+        />
+      </div>
+
+      <ul id="financeList" class="ticket-list"></ul>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="../js/finance.js"></script>
+</body>
+</html>
