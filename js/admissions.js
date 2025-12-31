@@ -20,6 +20,7 @@ let courseFilter = null; // when set, history shows only that course
 
 // --- Persistence (localStorage) ---
 const STORAGE_KEY = 'qlass_admissions_state_v2';
+const STUDENT_SEQ_KEY = 'qlass_student_seq_v1'; // for STU-BEN-0001 sequence
 
 function saveState() {
   try {
@@ -36,10 +37,11 @@ function loadState() {
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') return;
 
-    // Normalize applications with embedded stages+timestamps
+    // Normalize applications with embedded stages+timestamps+studentId
     state.applications = Array.isArray(parsed.applications) ? parsed.applications : [];
     state.applications = state.applications.map(app => ({
       ...app,
+      studentId: app.studentId || null,
       stages: Object.assign(
         { verification: 'pending', approval: 'pending', enrollment: 'pending' },
         app.stages || {}
@@ -95,6 +97,16 @@ function clearState() {
   showToast('Saved state cleared');
 }
 
+// --- Student ID sequence helper ---
+function getNextStudentId() {
+  let current = parseInt(localStorage.getItem(STUDENT_SEQ_KEY) || '0', 10);
+  const next = current + 1;
+  localStorage.setItem(STUDENT_SEQ_KEY, String(next));
+
+  const padded = String(next).padStart(4, '0'); // 0001, 0002 ...
+  return `STU-BEN-${padded}`;
+}
+
 // --- Elements ---
 const form = document.getElementById('applicationForm');
 const toast = document.getElementById('toast');
@@ -123,7 +135,6 @@ const applyEnrollmentBtn = document.getElementById('applyEnrollment');
 const ticketSearchInput = document.getElementById('ticketSearch');
 
 // --- Live search above admissions history ---
-
 if (ticketSearchInput) {
   ticketSearchInput.addEventListener('input', () => {
     renderTicketHistory();
@@ -234,8 +245,13 @@ function updateTicketViewer() {
 
   const label = status[0].toUpperCase() + status.slice(1);
 
+  const studentIdLine = state.application.studentId
+    ? `<strong>Student ID:</strong> ${state.application.studentId}<br>`
+    : '';
+
   summary.innerHTML = `
     <strong>Ticket ID:</strong> ${state.application.id}<br>
+    ${studentIdLine}
     <strong>Student:</strong> ${state.application.name}<br>
     <strong>Course:</strong> ${state.application.course}<br>
     <strong>Current Stage:</strong> ${stage}<br>
@@ -294,7 +310,6 @@ function updateSnapshot() {
   if (rejEl)   rejEl.textContent = rejected;
   if (yearEl)  yearEl.textContent = thisYear;
 
-  
   if (byCourseWrap) {
     byCourseWrap.innerHTML = '';
     Object.entries(courseCounts)
@@ -367,9 +382,14 @@ function renderTicketHistory() {
     const isActive = state.application && state.application.id === app.id;
     if (isActive) li.classList.add('active');
 
+    const studentIdPart = app.studentId
+      ? `<span class="ticket-student-id">${app.studentId}</span>`
+      : '';
+
     li.innerHTML = `
       <div class="ticket-line">
         <span class="ticket-id">${app.id}</span>
+        ${studentIdPart}
         <span class="ticket-name">${app.name}</span>
         <span class="ticket-course">${app.course}</span>
         <span class="ticket-status-pill">${getTicketStatusSummary(app)}</span>
@@ -424,6 +444,7 @@ form.addEventListener('submit', (e)=>{
     id: 'APP-' + Math.random().toString(36).slice(2,8).toUpperCase(),
     name, email, phone, course,
     submittedAt: new Date().toISOString(),
+    studentId: null,   // will be set after enrollment
     stages: {
       verification: 'pending',
       approval: 'pending',
@@ -566,6 +587,7 @@ applyApprovalBtn.addEventListener('click', ()=>{
   saveState();
   updateTicketViewer();
   renderTicketHistory();
+  updateSnapshot();
   showToast('Approval: ' + action);
 });
 
@@ -590,11 +612,18 @@ applyEnrollmentBtn.addEventListener('click', ()=>{
     rejected: 'Rejected at enrollment'
   }[action] + formatTimestamp(state.timestamps.enrollment);
 
+  // Generate Student ID only when enrolled and not already assigned
+  if (action === 'enrolled' && !state.application.studentId) {
+    const newStudentId = getNextStudentId();
+    state.application.studentId = newStudentId;
+  }
+
   syncCurrentApplicationToArray();
   updatePipelineProgress();
   saveState();
   updateTicketViewer();
   renderTicketHistory();
+  updateSnapshot();
   showToast('Enrollment: ' + action);
 });
 
@@ -608,6 +637,7 @@ form.addEventListener('reset', ()=>{
   saveState();
   updateTicketViewer();
   renderTicketHistory();
+  updateSnapshot();
   showToast('Form reset');
 });
 
