@@ -90,87 +90,95 @@ function renderFinanceList() {
     return;
   }
 
-  financeList.innerHTML = filtered.map(app => {
-    const record = financeRecords[app.id] || {};
-    const items  = record.items || {};
-    const stamps = record.timestamps || {};
-    const paid   = record.paid ? 'Paid' : 'Unpaid';
-    const tsLabel = record.lastUpdated
-      ? new Date(record.lastUpdated).toLocaleString()
-      : '—';
+financeList.innerHTML = filtered.map(app => {
+  const record = financeRecords[app.id] || {};
+  const items  = record.items || {};
+  const stamps = record.timestamps || {};
+  const paid   = record.paid ? 'Paid' : 'Unpaid';
+  const tsLabel = record.lastUpdated
+    ? new Date(record.lastUpdated).toLocaleString()
+    : '—';
 
-    const statusClass = record.paid ? 'status-paid' : 'status-unpaid';
-    const val = (key) => (items[key] != null ? items[key] : '');
-    const stampText = (key) =>
-      stamps[key] ? new Date(stamps[key]).toLocaleString() : '';
+  const statusClass = record.paid ? 'status-paid' : 'status-unpaid';
+  const val = (key) => (items[key] != null ? items[key] : '');
+  const stampText = (key) =>
+    stamps[key] ? new Date(stamps[key]).toLocaleString() : '';
 
-    const row = (label, key) => `
-      <tr>
-        <td>${label}</td>
-        <td>
-          <div class="fee-cell">
-            <input type="number" min="0" step="0.01"
-                   class="fee-input" data-field="${key}"
-                   value="${val(key)}">
-            <span class="fee-timestamp">
-              ${stampText(key) ? `• ${stampText(key)}` : ''}
-            </span>
-          </div>
-        </td>
-      </tr>
-    `;
+  const enrollmentTs = app.timestamps?.enrollment
+    ? new Date(app.timestamps.enrollment).toLocaleString()
+    : '—';
 
-    return `
-      <li class="ticket-item" data-id="${app.id}">
-        <div class="ticket-line">
-          <span class="ticket-student-id">${app.studentId || 'Pending ID'}</span>
-          <span class="ticket-name">${app.name}</span>
-          <span class="ticket-course">${app.course}</span>
+  const headerLine = `
+    ${app.studentId || 'Pending ID'}
+    &nbsp;${app.name}
+    &nbsp;${app.course}
+    &nbsp;- Enrolled on ${enrollmentTs}
+  `;
+
+  const row = (label, key) => `
+    <tr>
+      <td>${label}</td>
+      <td>
+        <div class="fee-cell">
+          <input type="number" min="0" step="0.01"
+                 class="fee-input" data-field="${key}"
+                 value="${val(key)}">
+          <span class="fee-timestamp">
+            ${stampText(key) ? `• ${stampText(key)}` : ''}
+          </span>
         </div>
+      </td>
+    </tr>
+  `;
 
-        <div class="fee-table-wrapper">
-          <table class="fee-table">
-            <thead>
-              <tr>
-                <th>Component</th>
-                <th>Amount (₹)</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${row('Books', 'books')}
-              ${row('Uniform', 'uniform')}
-              ${row('1st Term', 'term1')}
-              ${row('2nd Term', 'term2')}
-              ${row('3rd Term', 'term3')}
-              ${row('4th Term', 'term4')}
-            </tbody>
-            <tfoot>
-              <tr>
-                <th>Total</th>
-                <th>
-                  <span class="fee-total">
-                    ₹${record.total != null ? Number(record.total).toFixed(2) : '0.00'}
-                  </span>
-                </th>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+  return `
+    <li class="ticket-item" data-id="${app.id}">
+      <div class="ticket-line ticket-line-top">
+        <span class="ticket-top-summary">${headerLine}</span>
+      </div>
 
-        <div class="ticket-line finance-line">
-          <span class="finance-status ${statusClass}">Fee: ${paid}</span>
-          <span class="finance-time">Last updated: ${tsLabel}</span>
-          <button
-            class="btn btn-primary btn-sm"
-            data-action="save-fee"
-            data-ticket-id="${app.id}">
-            Save fee details
-          </button>
-        </div>
-      </li>
-    `;
-  }).join('');
-}
+      <div class="fee-table-wrapper">
+        <table class="fee-table">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Amount (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${row('Books', 'books')}
+            ${row('Uniform', 'uniform')}
+            ${row('1st Term', 'term1')}
+            ${row('2nd Term', 'term2')}
+            ${row('3rd Term', 'term3')}
+            ${row('4th Term', 'term4')}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th>Total</th>
+              <th>
+                <span class="fee-total">
+                  ₹${record.total != null ? Number(record.total).toFixed(2) : '0.00'}
+                </span>
+              </th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="ticket-line finance-line">
+        <span class="finance-status ${statusClass}">Fee: ${paid}</span>
+        <span class="finance-time">Last updated: ${tsLabel}</span>
+        <button
+          class="btn btn-primary btn-sm"
+          data-action="save-fee"
+          data-ticket-id="${app.id}">
+          Save fee details
+        </button>
+      </div>
+    </li>
+  `;
+}).join('');
 
 // --- Save fee + per-field timestamps for one ticket ---
 function saveFeeForTicket(ticketId) {
