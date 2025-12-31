@@ -9,8 +9,49 @@
 //   lastUpdated: ISO string
 // }
 
+// --- Global constants ---
 const ADMISSIONS_KEY = 'qlass_admissions_state_v2';
 const FINANCE_KEY    = 'qlass_finance_records_v1';
+
+// --- Course fee mapping ---
+const COURSE_FEES = {
+  'Pre-Nursery': 40000,
+  'Nursery': 50000,
+  'LKG': 55000,
+  'UKG': 65000,
+  'Grade 1': 75000,
+  'Grade 2': 80000,
+  'Grade 3': 90000,
+  'Grade 4': 95000,
+  'Grade 5': 95000,
+  'Grade 6': 95000,
+  'Grade 7': 100000,
+  'Grade 8': 100000,
+  'Grade 9': 110000,
+  'Grade 10': 115000,
+  'Grade 11': 125000,
+  'Grade 12': 135000,
+  'B.Sc Computer Science': 145000,
+  'B.Sc Mathematics': 145000,
+  'B.Sc Physics': 145000,
+  'BCA': 145000,
+  'BBA': 145000,
+  'B.Com': 145000,
+  'B.Com Accounting & Finance': 145000,
+  'B.A English': 125000,
+  'B.A Economics': 125000,
+  'B.A Psychology': 135000,
+  'B.Tech Computer Science': 135000,
+  'BE Computer Science': 145000,
+  'MBA': 175000,
+  'MCA': 175000,
+  'M.Com': 175000,
+  'M.A English': 175000,
+  'M.A Economics': 175000,
+  'M.Sc Data Science': 175000,
+  'M.Sc Computer Science': 175000,
+  'M.Sc Artificial Intelligence': 175000
+};
 
 const toast       = document.getElementById('toast');
 const financeList = document.getElementById('financeList');
@@ -71,6 +112,7 @@ function buildReceiptText(app, record) {
 
   const lines = [];
 
+  // --- Student + Course Info ---
   lines.push(`Student: ${app.name} (${app.studentId || 'Pending ID'})`);
   lines.push(`Course: ${app.course}`);
   if (app.timestamps && app.timestamps.enrollment) {
@@ -81,6 +123,7 @@ function buildReceiptText(app, record) {
   }
   lines.push('');
 
+  // --- Fee Components ---
   lines.push('Fee components (₹):');
   const keys = [
     ['Books', 'books'],
@@ -117,7 +160,25 @@ function buildReceiptText(app, record) {
     }
   });
 
+  // --- Totals ---
   lines.push(`Total paid till date: ₹${total.toFixed(2)}`);
+
+  // --- Course Fee + Balance + Status ---
+  if (COURSE_FEES[app.course]) {
+    const courseFee = COURSE_FEES[app.course];
+    const balance = courseFee - total;
+    lines.push(`Course fee: ₹${courseFee.toLocaleString()}`);
+    lines.push(`Balance: ₹${balance.toLocaleString()}`);
+
+    if (balance <= 0) {
+      lines.push(`Status: ✅ Fully paid`);
+    } else {
+      lines.push(`Status: ⚠️ Pending balance`);
+    }
+  } else {
+    lines.push(`Course fee: Not configured`);
+  }
+
   lines.push('');
   lines.push('This is a system-generated fee summary.');
 
@@ -252,6 +313,19 @@ function renderFinanceList() {
     const total = record.total != null ? Number(record.total) : 0;
     const totalLabel = total.toFixed(2);
 
+    // --- Course fee + balance logic ---
+    const courseFee = COURSE_FEES[app.course] || null;
+    let balanceLabel = '';
+    let balanceClass = 'balance-pill balance-pill-neutral';
+
+    if (courseFee != null) {
+      const balance = courseFee - total;
+      balanceLabel = `₹${balance.toLocaleString()}`;
+      balanceClass = balance <= 0
+        ? 'balance-pill balance-pill-paid'
+        : 'balance-pill balance-pill-unpaid';
+    }
+
     return `
       <li class="ticket-item" data-id="${app.id}">
         <div class="ticket-line ticket-line-top">
@@ -260,7 +334,10 @@ function renderFinanceList() {
 
         <div class="ticket-line finance-summary">
           <span class="summary-pill">Total paid: ₹${totalLabel}</span>
-          <span class="summary-muted">(Course fee & balance to be configured later)</span>
+          ${courseFee != null
+            ? `<span class="summary-pill">Course fee: ₹${courseFee.toLocaleString()}</span>
+               <span class="${balanceClass}">Balance: ${balanceLabel}</span>`
+            : `<span class="summary-pill summary-muted">(Course fee not configured)</span>`}
         </div>
 
         <div class="fee-and-receipt">
