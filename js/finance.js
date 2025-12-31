@@ -84,14 +84,15 @@ function renderFinanceList() {
   }
 
   financeList.innerHTML = filtered.map(app => {
-    const record = financeRecords[app.id];
-    const paid = record?.paid ? 'Paid' : 'Unpaid';
-    const amount = record?.amount != null ? record.amount : '—';
-    const tsLabel = record?.timestamp
+    const record = financeRecords[app.id] || {};
+    const items  = record.items || {};
+    const paid   = record.paid ? 'Paid' : 'Unpaid';
+    const tsLabel = record.timestamp
       ? new Date(record.timestamp).toLocaleString()
       : '—';
 
-    const statusClass = record?.paid ? 'status-paid' : 'status-unpaid';
+    const statusClass = record.paid ? 'status-paid' : 'status-unpaid';
+    const val = (key) => (items[key] != null ? items[key] : '');
 
     return `
       <li class="ticket-item" data-id="${app.id}">
@@ -100,15 +101,86 @@ function renderFinanceList() {
           <span class="ticket-name">${app.name}</span>
           <span class="ticket-course">${app.course}</span>
         </div>
+
+        <div class="fee-table-wrapper">
+          <table class="fee-table">
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Books</td>
+                <td>
+                  <input type="number" min="0" step="0.01"
+                         class="fee-input" data-field="books"
+                         value="${val('books')}">
+                </td>
+              </tr>
+              <tr>
+                <td>Uniform</td>
+                <td>
+                  <input type="number" min="0" step="0.01"
+                         class="fee-input" data-field="uniform"
+                         value="${val('uniform')}">
+                </td>
+              </tr>
+              <tr>
+                <td>1st Term</td>
+                <td>
+                  <input type="number" min="0" step="0.01"
+                         class="fee-input" data-field="term1"
+                         value="${val('term1')}">
+                </td>
+              </tr>
+              <tr>
+                <td>2nd Term</td>
+                <td>
+                  <input type="number" min="0" step="0.01"
+                         class="fee-input" data-field="term2"
+                         value="${val('term2')}">
+                </td>
+              </tr>
+              <tr>
+                <td>3rd Term</td>
+                <td>
+                  <input type="number" min="0" step="0.01"
+                         class="fee-input" data-field="term3"
+                         value="${val('term3')}">
+                </td>
+              </tr>
+              <tr>
+                <td>4th Term</td>
+                <td>
+                  <input type="number" min="0" step="0.01"
+                         class="fee-input" data-field="term4"
+                         value="${val('term4')}">
+                </td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>Total</th>
+                <th>
+                  <span class="fee-total">
+                    ₹${record.total != null ? Number(record.total).toFixed(2) : '0.00'}
+                  </span>
+                </th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
         <div class="ticket-line finance-line">
           <span class="finance-status ${statusClass}">Fee: ${paid}</span>
-          <span class="finance-amount">Amount: ₹${amount}</span>
-          <span class="finance-time">${tsLabel}</span>
+          <span class="finance-time">Last updated: ${tsLabel}</span>
           <button
             class="btn btn-primary btn-sm"
-            data-action="collect"
+            data-action="save-fee"
             data-ticket-id="${app.id}">
-            ${record?.paid ? 'Update Fee' : 'Collect Fee'}
+            Save fee details
           </button>
         </div>
       </li>
@@ -116,49 +188,50 @@ function renderFinanceList() {
   }).join('');
 }
 
-// --- Fee collection logic ---
-function collectFee(ticketId) {
-  const enrolled = getEnrolledApplications();
-  const app = enrolled.find(a => a.id === ticketId);
-  if (!app) {
-    showToast('Student not found or not enrolled');
-    return;
-  }
+// --- Save fee + total for one ticket ---
+function saveFeeForTicket(ticketId) {
+  const itemEl = financeList.querySelector(`.ticket-item[data-id="${ticketId}"]`);
+  if (!itemEl) return;
 
-  const existing = financeRecords[ticketId];
-  const initial = existing?.amount != null ? String(existing.amount) : '';
+  const inputs = itemEl.querySelectorAll('.fee-input');
+  const items = {};
+  let total = 0;
 
-  const amountStr = prompt(
-    `Enter fee amount for ${app.name} (${app.studentId || app.id}):`,
-    initial
-  );
+  inputs.forEach(input => {
+    const field = input.dataset.field;
+    if (!field) return;
 
-  if (amountStr === null) {
-    return; // cancelled
-  }
+    const valueStr = input.value.trim();
+    if (!valueStr) {
+      items[field] = 0;
+      return;
+    }
 
-  const clean = amountStr.trim();
-  if (!clean || isNaN(clean)) {
-    showToast('Invalid amount');
-    return;
-  }
+    const num = parseFloat(valueStr);
+    if (isNaN(num)) {
+      items[field] = 0;
+      return;
+    }
 
-  const amount = parseFloat(clean);
+    items[field] = num;
+    total += num;
+  });
 
   financeRecords[ticketId] = {
-    paid: true,
-    amount,
+    paid: total > 0,
+    items,
+    total,
     timestamp: new Date().toISOString()
   };
 
   try {
-    localStorage.setItem(FINANCE_KEY, JSON.stringify(financeRecords));
+    localStorage.setItem(FINANCE_KEY, JSON.stringify(financeRecords)); // nested object via JSON [web:185]
   } catch (err) {
     console.warn('Failed to save finance records', err);
   }
 
   renderFinanceList();
-  showToast(`Fee recorded for ${app.name}`);
+  showToast('Fee details saved');
 }
 
 // --- Event wiring ---
@@ -171,10 +244,10 @@ if (searchInput) {
 // Delegate button clicks on the list
 if (financeList) {
   financeList.addEventListener('click', (e) => {
-    const btn = e.target.closest('button[data-action="collect"]');
+    const btn = e.target.closest('button[data-action="save-fee"]');
     if (!btn) return;
     const ticketId = btn.dataset.ticketId;
-    collectFee(ticketId);
+    saveFeeForTicket(ticketId);
   });
 }
 
