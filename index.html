@@ -4,102 +4,372 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Qlass – Workflow Dashboard</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f9fafc;
-      margin: 0;
-      padding: 0;
-    }
+<style>
+  :root {
+    --bg-gradient: radial-gradient(circle at top, #e0f2fe 0, #f9fafb 42%, #f3f4f6 100%);
+    --surface: rgba(255, 255, 255, 0.82);
+    --surface-strong: rgba(255, 255, 255, 0.9);
+    --surface-soft: rgba(255, 255, 255, 0.7);
+    --border-soft: 1px solid rgba(148, 163, 184, 0.4);
+    --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.12);
+    --shadow-hover: 0 24px 60px rgba(15, 23, 42, 0.16);
+
+    --primary: #1d4ed8;
+    --primary-soft: rgba(37, 99, 235, 0.12);
+    --accent: #059669;
+    --accent-soft: rgba(5, 150, 105, 0.12);
+
+    --text-main: #0f172a;
+    --text-muted: #6b7280;
+
+    --radius-lg: 18px;
+    --radius-xl: 22px;
+    --radius-pill: 999px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--text-main);
+    min-height: 100vh;
+    background: var(--bg-gradient);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header – glass bar */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 1.15rem 1.75rem;
+    text-align: center;
+    font-size: 1.35rem;
+    font-weight: 650;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #0b1f4a;
+    background: linear-gradient(
+        to right,
+        rgba(219, 234, 254, 0.9),
+        rgba(191, 219, 254, 0.9),
+        rgba(219, 234, 254, 0.95)
+      );
+    border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+    box-shadow: 0 14px 26px rgba(15, 23, 42, 0.12);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  header::after {
+    content: "Smart workflows for modern campuses";
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* Page shell */
+  .page-shell {
+    flex: 1;
+    padding: 2.2rem clamp(1.25rem, 3vw, 2.75rem) 2.8rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* Small top meta row (optional badge look) */
+  .page-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.4rem;
+    gap: 1rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+  }
+
+  .meta-pill {
+    padding: 0.35rem 0.9rem;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(
+      135deg,
+      rgba(219, 234, 254, 0.9),
+      rgba(191, 219, 254, 0.8)
+    );
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    color: #1d4ed8;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .meta-pill span {
+    font-size: 0.75rem;
+  }
+
+  /* Cards grid */
+  .container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.6rem;
+  }
+
+  /* Glass card base */
+  .card {
+    position: relative;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: 1.6rem 1.5rem 1.55rem;
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    border: var(--border-soft);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    overflow: hidden;
+    cursor: pointer;
+    transition:
+      transform 160ms ease-out,
+      box-shadow 160ms ease-out,
+      border-color 160ms ease-out,
+      background 160ms ease-out,
+      translate 160ms ease-out;
+  }
+
+  /* Soft gradient highlight strip */
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at top left,
+      rgba(59, 130, 246, 0.16),
+      transparent 55%
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms ease-out;
+  }
+
+  /* Hover & focus states */
+  .card:hover,
+  .card:focus-visible {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+    border-color: rgba(59, 130, 246, 0.6);
+    background: var(--surface-strong);
+  }
+
+  .card:hover::before,
+  .card:focus-visible::before {
+    opacity: 1;
+  }
+
+  .card:active {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16);
+  }
+
+  /* Card content */
+  .card-icon {
+    font-size: 2.1rem;
+    margin-bottom: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.7rem;
+    height: 2.7rem;
+    border-radius: 24%;
+    background: radial-gradient(circle at 30% 0, #eff6ff, #dbeafe);
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.16);
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 650;
+    margin-bottom: 0.35rem;
+    letter-spacing: 0.01em;
+    color: #0b1f4a;
+  }
+
+  .card-desc {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+
+  /* Small subtle badge in corner */
+  .card-tag {
+    position: absolute;
+    top: 0.95rem;
+    right: 1.15rem;
+    padding: 0.18rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: #1d4ed8;
+    background: var(--primary-soft);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+
+  /* Example category accents per card (optional) */
+  .card:nth-child(1) .card-icon {
+    background: radial-gradient(circle at 30% 0, #eff6ff, #dbeafe);
+  }
+  .card:nth-child(2) .card-icon {
+    background: radial-gradient(circle at 30% 0, #ecfdf3, #bbf7d0);
+  }
+  .card:nth-child(3) .card-icon {
+    background: radial-gradient(circle at 30% 0, #fef3c7, #fde68a);
+  }
+  .card:nth-child(4) .card-icon {
+    background: radial-gradient(circle at 30% 0, #f5f3ff, #e9d5ff);
+  }
+  .card:nth-child(5) .card-icon {
+    background: radial-gradient(circle at 30% 0, #eef2ff, #c7d2fe);
+  }
+  .card:nth-child(6) .card-icon {
+    background: radial-gradient(circle at 30% 0, #ecfeff, #a5f3fc);
+  }
+  .card:nth-child(7) .card-icon {
+    background: radial-gradient(circle at 30% 0, #fff7ed, #fed7aa);
+  }
+  .card:nth-child(8) .card-icon {
+    background: radial-gradient(circle at 30% 0, #fef2f2, #fecaca);
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 768px) {
     header {
-      background: #1a3d7c;
-      color: #fff;
-      padding: 1.5rem;
-      text-align: center;
-      font-size: 1.8rem;
-      font-weight: bold;
-      letter-spacing: 1px;
+      font-size: 1.1rem;
+      padding: 1rem 1.25rem;
     }
+
+    .page-shell {
+      padding: 1.7rem 1.2rem 2.2rem;
+    }
+
     .container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-      padding: 2rem;
+      gap: 1.3rem;
     }
+
     .card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.08);
-      padding: 1.5rem;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      cursor: pointer;
-      text-decoration: none;
-      color: inherit;
-      display: block;
+      padding: 1.4rem 1.3rem 1.35rem;
+      border-radius: var(--radius-lg);
     }
-    .card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 10px 18px rgba(0,0,0,0.12);
-    }
+
     .card-icon {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #1a3d7c;
+      margin-bottom: 0.6rem;
     }
-    .card-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
+  }
+
+  @media (max-width: 480px) {
+    .page-meta {
+      flex-direction: column;
+      align-items: flex-start;
     }
-    .card-desc {
-      font-size: 0.95rem;
-      color: #555;
+
+    header::after {
+      display: none;
     }
-  </style>
+  }
+</style>
 </head>
 <body>
   <header>Qlass – Smart Workflows for Education</header>
-  <div class="container">
-    <a class="card" href="forms/admissions.html">
-      <div class="card-icon">🎓</div>
-      <div class="card-title">Admissions</div>
-      <div class="card-desc">Applications, verification, and enrollment approvals.</div>
-    </a>
-    <a class="card" href="forms/academics.html">
-      <div class="card-icon">📚</div>
-      <div class="card-title">Academics</div>
-      <div class="card-desc">Course creation, syllabus, and timetable workflows.</div>
-    </a>
-    <a class="card" href="forms/exams.html">
-      <div class="card-icon">📝</div>
-      <div class="card-title">Examinations</div>
-      <div class="card-desc">Exam scheduling, invigilation, and result approvals.</div>
-    </a>
-    <a class="card" href="forms/student-services.html">
-      <div class="card-icon">👩‍🎓</div>
-      <div class="card-title">Student Services</div>
-      <div class="card-desc">Leave requests, scholarships, hostel & transport workflows.</div>
-    </a>
-    <a class="card" href="forms/faculty.html">
-      <div class="card-icon">👨‍🏫</div>
-      <div class="card-title">Faculty & Staff</div>
-      <div class="card-desc">Recruitment, onboarding, and appraisal workflows.</div>
-    </a>
-    <a class="card" href="forms/finance.html">
-      <div class="card-icon">💰</div>
-      <div class="card-title">Finance</div>
-      <div class="card-desc">Fee collection, refunds, and budget approvals.</div>
-    </a>
-    <a class="card" href="forms/events.html">
-      <div class="card-icon">🎤</div>
-      <div class="card-title">Events</div>
-      <div class="card-desc">Seminars, guest lectures, and cultural fest workflows.</div>
-    </a>
-    <a class="card" href="forms/compliance.html">
-      <div class="card-icon">📑</div>
-      <div class="card-title">Compliance</div>
-      <div class="card-desc">Accreditation, audits, and policy documentation workflows.</div>
-    </a>
-  </div>
+
+  <main class="page-shell">
+    <section class="page-meta" aria-label="Qlass dashboard summary">
+      <div class="meta-pill">
+        <span>📊 Qlass Dashboard</span>
+      </div>
+      <span>Academic year 2025–26</span>
+    </section>
+
+    <section class="container" aria-label="Workflow shortcuts">
+      <a class="card" href="forms/admissions.html">
+        <div class="card-tag">Core</div>
+        <div class="card-icon" aria-hidden="true">🎓</div>
+        <h2 class="card-title">Admissions</h2>
+        <p class="card-desc">
+          Applications, verification, and enrollment approvals.
+        </p>
+      </a>
+
+      <a class="card" href="forms/academics.html">
+        <div class="card-tag">Academics</div>
+        <div class="card-icon" aria-hidden="true">📚</div>
+        <h2 class="card-title">Academics</h2>
+        <p class="card-desc">
+          Course creation, syllabus, and timetable workflows.
+        </p>
+      </a>
+
+      <a class="card" href="forms/exams.html">
+        <div class="card-tag">Assessments</div>
+        <div class="card-icon" aria-hidden="true">📝</div>
+        <h2 class="card-title">Examinations</h2>
+        <p class="card-desc">
+          Exam scheduling, invigilation, and result approvals.
+        </p>
+      </a>
+
+      <a class="card" href="forms/student-services.html">
+        <div class="card-tag">Student</div>
+        <div class="card-icon" aria-hidden="true">👩‍🎓</div>
+        <h2 class="card-title">Student Services</h2>
+        <p class="card-desc">
+          Leave requests, scholarships, hostel &amp; transport workflows.
+        </p>
+      </a>
+
+      <a class="card" href="forms/faculty.html">
+        <div class="card-tag">HR</div>
+        <div class="card-icon" aria-hidden="true">👨‍🏫</div>
+        <h2 class="card-title">Faculty &amp; Staff</h2>
+        <p class="card-desc">
+          Recruitment, onboarding, and appraisal workflows.
+        </p>
+      </a>
+
+      <a class="card" href="forms/finance.html">
+        <div class="card-tag">Finance</div>
+        <div class="card-icon" aria-hidden="true">💰</div>
+        <h2 class="card-title">Finance</h2>
+        <p class="card-desc">
+          Fee collection, refunds, and budget approvals.
+        </p>
+      </a>
+
+      <a class="card" href="forms/events.html">
+        <div class="card-tag">Activities</div>
+        <div class="card-icon" aria-hidden="true">🎤</div>
+        <h2 class="card-title">Events</h2>
+        <p class="card-desc">
+          Seminars, guest lectures, and cultural fest workflows.
+        </p>
+      </a>
+
+      <a class="card" href="forms/compliance.html">
+        <div class="card-tag">Compliance</div>
+        <div class="card-icon" aria-hidden="true">📑</div>
+        <h2 class="card-title">Compliance</h2>
+        <p class="card-desc">
+          Accreditation, audits, and policy documentation workflows.
+        </p>
+      </a>
+    </section>
+  </main>
 </body>
 </html>
