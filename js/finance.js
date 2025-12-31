@@ -267,10 +267,10 @@ function renderFinanceList() {
           <div class="fee-table-wrapper">
             <table class="fee-table">
               <colgroup>
+                <col style="width:25%">
+                <col style="width:18%">
+                <col style="width:24%">
                 <col style="width:30%">
-                <col style="width:20%">
-                <col style="width:25%">
-                <col style="width:25%">
               </colgroup>
               <thead>
                 <tr>
