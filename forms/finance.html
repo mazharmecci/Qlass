@@ -313,7 +313,43 @@
       100% { transform: scale(1); }
     }
 
+    .summary-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(243, 244, 246, 0.9);
+      color: #111827;
+      margin-right: 0.35rem;
+    }
     
+    .balance-pill {
+      border: 1px solid transparent;
+    }
+    
+    /* Green when fully paid */
+    .balance-pill-paid {
+      background: rgba(22, 163, 74, 0.12);
+      color: #166534;
+      border-color: rgba(22, 163, 74, 0.4);
+    }
+    
+    /* Red when unpaid / partial */
+    .balance-pill-unpaid {
+      background: rgba(248, 113, 113, 0.12);
+      color: #b91c1c;
+      border-color: rgba(248, 113, 113, 0.4);
+    }
+    
+    /* Neutral when no course fee configured */
+    .balance-pill-neutral {
+      background: rgba(209, 213, 219, 0.4);
+      color: #4b5563;
+      border-color: rgba(209, 213, 219, 0.7);
+    }
+
     /* === WhatsApp Button === */
     .btn-whatsapp {
       margin-left: 8px;
