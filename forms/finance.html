@@ -334,36 +334,23 @@
       <div class="header-title">Qlass – <span>Finance</span></div>
     </div>
   </header>
-
-  <main class="container">
-    <section class="card">
-      <div class="card-heading-row">
-        <h2 class="section-title">Fee Collection</h2>
-        <input
-          type="search"
-          id="financeSearch"
-          class="ticket-search"
-          placeholder="Search by student name, Student ID or ticket ID..."
-          autocomplete="off"
-        />
-      </div>
-
-      <ul id="financeList" class="ticket-list"></ul>
-      
-      <!-- WhatsApp Receipt Preview -->
-      <div class="receipt-inline">
-        <div class="receipt-inline-title">WhatsApp receipt</div>     
-        <div class="receipt-inline-body receipt-inline-empty" data-receipt-body>
-          WhatsApp receipt will appear here after you click WA.
+    <main class="container">
+      <section class="card">
+        <div class="card-heading-row">
+          <h2 class="section-title">Fee Collection</h2>
+          <input
+            type="search"
+            id="financeSearch"
+            class="ticket-search"
+            placeholder="Search by student name, Student ID or ticket ID..."
+            autocomplete="off"
+          />
         </div>
-        <button class="btn btn-sm btn-copy-receipt"
-                data-action="copy-receipt"
-                title="Copy receipt to clipboard">
-          📋 Copy
-        </button>
-      </div>
-    </section>
-  </main>
+    
+        <!-- JS will populate fee tables + receipt previews here -->
+        <ul id="financeList" class="ticket-list"></ul>
+      </section>
+    </main>  
 
   <div id="toast" class="toast"></div>
   <div id="receiptPreview" class="receipt-preview"></div>
