@@ -128,6 +128,51 @@ main.container {
     padding: 1.25rem 1rem 2.25rem;
   }
 }
+
+.card-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  text-decoration: none;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(255, 255, 255, 0.85);
+  color: #1f2933;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease,
+              box-shadow 0.15s ease;
+}
+
+.back-link:hover {
+  background: rgba(219, 234, 254, 0.95);    /* light blue hover */
+  border-color: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
+}
+
+.back-link:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* On very small screens, stack back + title nicely */
+@media (max-width: 640px) {
+  .card-heading-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 </style>
 </head>
 <body>
