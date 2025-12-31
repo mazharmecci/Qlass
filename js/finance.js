@@ -9,16 +9,12 @@
 //   lastUpdated: ISO string
 // }
 
-
-// Qlass/js/finance.js
-
 const ADMISSIONS_KEY = 'qlass_admissions_state_v2';
 const FINANCE_KEY    = 'qlass_finance_records_v1';
 
-const toast          = document.getElementById('toast');
-const financeList    = document.getElementById('financeList');
-const searchInput    = document.getElementById('financeSearch');
-const receiptPreview = document.getElementById('receiptPreview');
+const toast       = document.getElementById('toast');
+const financeList = document.getElementById('financeList');
+const searchInput = document.getElementById('financeSearch');
 
 function showToast(msg){
   if (!toast) return;
@@ -122,18 +118,19 @@ function buildReceiptText(app, record) {
   lines.push('');
   lines.push('This is a system-generated fee summary.');
 
-  return lines.join('\n'); // template literal style text [web:245][web:287]
+  return lines.join('\n'); // template literals usage [web:245][web:287]
 }
 
-function showReceiptSnippet(text) {
-  if (!receiptPreview) return;
-  receiptPreview.innerHTML = `
-    <div class="receipt-preview-title">WhatsApp receipt preview</div>
-    <div class="receipt-preview-body">${text.replace(/\n/g, '<br>')}</div>
-    <div class="receipt-actions">
-      Copy this text and paste it into WhatsApp for the parent/guardian.
-    </div>
-  `;
+// show receipt INSIDE the ticket, next to the table
+function showReceiptSnippet(ticketId, text) {
+  const ticket = financeList.querySelector(`.ticket-item[data-id="${ticketId}"]`);
+  if (!ticket) return;
+
+  const box = ticket.querySelector('.receipt-inline-body');
+  if (!box) return;
+
+  box.classList.remove('receipt-inline-empty');
+  box.innerHTML = text.replace(/\n/g, '<br>');
 }
 
 // --- Render finance list (with optional search) ---
@@ -273,42 +270,51 @@ function renderFinanceList() {
           </span>
         </div>
 
-        <div class="fee-table-wrapper">
-          <table class="fee-table">
-            <colgroup>
-              <col> <!-- Component -->
-              <col> <!-- Amount -->
-              <col> <!-- Type -->
-              <col> <!-- Timestamp -->
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Component</th>
-                <th>Amount (₹)</th>
-                <th>Type</th>
-                <th>When / how</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${row('Books', 'books')}
-              ${row('Uniform', 'uniform')}
-              ${row('1st Term', 'term1')}
-              ${row('2nd Term', 'term2')}
-              ${row('3rd Term', 'term3')}
-              ${row('4th Term', 'term4')}
-            </tbody>
-            <tfoot>
-              <tr>
-                <th>Total</th>
-                <th>
-                  <span class="fee-total">
-                    ₹${totalLabel}
-                  </span>
-                </th>
-                <th colspan="2"></th>
-              </tr>
-            </tfoot>
-          </table>
+        <div class="fee-and-receipt">
+          <div class="fee-table-wrapper">
+            <table class="fee-table">
+              <colgroup>
+                <col> <!-- Component -->
+                <col> <!-- Amount -->
+                <col> <!-- Type -->
+                <col> <!-- Timestamp -->
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Component</th>
+                  <th>Amount (₹)</th>
+                  <th>Type</th>
+                  <th>When / how</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${row('Books', 'books')}
+                ${row('Uniform', 'uniform')}
+                ${row('1st Term', 'term1')}
+                ${row('2nd Term', 'term2')}
+                ${row('3rd Term', 'term3')}
+                ${row('4th Term', 'term4')}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th>Total</th>
+                  <th>
+                    <span class="fee-total">
+                      ₹${totalLabel}
+                    </span>
+                  </th>
+                  <th colspan="2"></th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div class="receipt-inline">
+            <div class="receipt-inline-title">WhatsApp receipt</div>
+            <div class="receipt-inline-body receipt-inline-empty">
+              Click WA to preview receipt here.
+            </div>
+          </div>
         </div>
 
         <div class="ticket-line finance-line">
@@ -401,7 +407,7 @@ function saveFeeForTicket(ticketId) {
     lastUpdated: nowIso
   };
 
-  localStorage.setItem(FINANCE_KEY, JSON.stringify(financeRecords)); // localStorage pattern [web:185]
+  localStorage.setItem(FINANCE_KEY, JSON.stringify(financeRecords)); // localStorage persistence [web:185]
   renderFinanceList();
   showToast('Fee details saved');
 }
@@ -433,7 +439,7 @@ if (financeList) {
       if (!app) return;
 
       const text = buildReceiptText(app, record);
-      showReceiptSnippet(text);
+      showReceiptSnippet(ticketId, text);
     }
   });
 }
