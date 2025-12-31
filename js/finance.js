@@ -34,7 +34,12 @@ function loadAdmissionsState() {
 //   items: { books, uniform, term1, term2, term3, term4 },
 //   timestamps: { books, uniform, term1, term2, term3, term4 },
 //   total: number,
-//   lastUpdated: ISO string
+//   lastUpdated: ISO string,
+//   payment: {
+//     method: 'cash' | 'cheque' | '',
+//     chequeNo: string,
+//     bankName: string
+//   }
 // }
 let financeRecords = {};
 try {
@@ -92,9 +97,11 @@ function renderFinanceList() {
   }
 
   financeList.innerHTML = filtered.map(app => {
-    const record = financeRecords[app.id] || {};
-    const items  = record.items || {};
-    const stamps = record.timestamps || {};
+    const record  = financeRecords[app.id] || {};
+    const items   = record.items || {};
+    const stamps  = record.timestamps || {};
+    const payment = record.payment || {};
+
     const paid   = record.paid ? 'Paid' : 'Unpaid';
     const tsLabel = record.lastUpdated
       ? new Date(record.lastUpdated).toLocaleString()
@@ -108,13 +115,13 @@ function renderFinanceList() {
       if (raw == null || raw === '') return '';
       const num = Number(raw);
       if (Number.isNaN(num)) return '';
-      return num.toFixed(2); // keep two decimals
+      return num.toFixed(2);
     };
 
     const stampText = (key) =>
       stamps[key] ? new Date(stamps[key]).toLocaleString() : '';
 
-    // Safe enrollment timestamp (works for ISO or stored display strings)
+    // Safe enrollment timestamp
     let enrollmentTs = '—';
     if (app.timestamps && app.timestamps.enrollment) {
       const raw = app.timestamps.enrollment;
@@ -150,6 +157,10 @@ function renderFinanceList() {
 
     const total = record.total != null ? Number(record.total) : 0;
     const totalLabel = total.toFixed(2);
+
+    const method   = payment.method || '';
+    const chequeNo = payment.chequeNo || '';
+    const bankName = payment.bankName || '';
 
     return `
       <li class="ticket-item" data-id="${app.id}">
@@ -209,10 +220,44 @@ function renderFinanceList() {
             Save fee details
           </button>
         </div>
+
+        <div class="ticket-line payment-line">
+          <div class="payment-block">
+            <label>
+              Type of transaction
+              <select class="payment-method" data-ticket-id="${app.id}">
+                <option value="">Select</option>
+                <option value="cash" ${method === 'cash' ? 'selected' : ''}>Cash</option>
+                <option value="cheque" ${method === 'cheque' ? 'selected' : ''}>Cheque</option>
+              </select>
+            </label>
+
+            <div class="cheque-fields ${method === 'cheque' ? '' : 'hidden'}">
+              <label>
+                Cheque no.
+                <input
+                  type="text"
+                  class="cheque-no-input"
+                  data-ticket-id="${app.id}"
+                  value="${chequeNo}"
+                >
+              </label>
+              <label>
+                Bank name
+                <input
+                  type="text"
+                  class="bank-name-input"
+                  data-ticket-id="${app.id}"
+                  value="${bankName}"
+                >
+              </label>
+            </div>
+          </div>
+        </div>
       </li>
     `;
   }).join('');
-} // <-- this closing brace fixes the Unexpected end of input
+}
 
 // --- Save fee + per-field timestamps for one ticket ---
 function saveFeeForTicket(ticketId) {
@@ -257,15 +302,29 @@ function saveFeeForTicket(ticketId) {
     }
   });
 
+  // Read payment info
+  const methodSelect  = itemEl.querySelector('.payment-method');
+  const chequeNoInput = itemEl.querySelector('.cheque-no-input');
+  const bankNameInput = itemEl.querySelector('.bank-name-input');
+
+  const method   = methodSelect ? methodSelect.value : '';
+  const chequeNo = chequeNoInput ? chequeNoInput.value.trim() : '';
+  const bankName = bankNameInput ? bankNameInput.value.trim() : '';
+
   financeRecords[ticketId] = {
     paid: total > 0,
     items,
     timestamps,
     total,
-    lastUpdated: nowIso
+    lastUpdated: nowIso,
+    payment: {
+      method,
+      chequeNo: method === 'cheque' ? chequeNo : '',
+      bankName: method === 'cheque' ? bankName : ''
+    }
   };
 
-  localStorage.setItem(FINANCE_KEY, JSON.stringify(financeRecords)); // JSON localStorage pattern [web:185][web:239]
+  localStorage.setItem(FINANCE_KEY, JSON.stringify(financeRecords));
   renderFinanceList();
   showToast('Fee details saved');
 }
@@ -283,6 +342,24 @@ if (financeList) {
     if (!btn) return;
     const ticketId = btn.dataset.ticketId;
     saveFeeForTicket(ticketId);
+  });
+
+  // Dynamic show/hide for cheque fields
+  financeList.addEventListener('change', (e) => {
+    const select = e.target.closest('.payment-method');
+    if (!select) return;
+
+    const ticketItem = select.closest('.ticket-item');
+    if (!ticketItem) return;
+
+    const chequeBlock = ticketItem.querySelector('.cheque-fields');
+    if (!chequeBlock) return;
+
+    if (select.value === 'cheque') {
+      chequeBlock.classList.remove('hidden');
+    } else {
+      chequeBlock.classList.add('hidden');
+    }
   });
 }
 
