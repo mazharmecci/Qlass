@@ -52,7 +52,8 @@ function getEnrolledApplications() {
     .map(app => ({
       ...app,
       studentId: app.studentId || null,
-      stages: app.stages || {}
+      stages: app.stages || {},
+      timestamps: app.timestamps || {}
     }))
     .filter(app => app.stages.enrollment === 'enrolled');
 }
@@ -104,16 +105,18 @@ function renderFinanceList() {
     const stampText = (key) =>
       stamps[key] ? new Date(stamps[key]).toLocaleString() : '';
 
-    const enrollmentTs = app.timestamps?.enrollment
-      ? new Date(app.timestamps.enrollment).toLocaleString()
-      : '—';
+    // Safe enrollment timestamp
+    const rawEnroll = app.timestamps?.enrollment;
+    let enrollmentTs = '—';
+    if (rawEnroll) {
+      const d = new Date(rawEnroll);
+      if (!isNaN(d.getTime())) {
+        enrollmentTs = d.toLocaleString();
+      }
+    }
 
-    const headerLine = `
-      ${app.studentId || 'Pending ID'}
-      &nbsp;${app.name}
-      &nbsp;${app.course}
-      &nbsp;- Enrolled on ${enrollmentTs}
-    `;
+    const headerLine =
+      `${app.studentId || 'Pending ID'} ${app.name} ${app.course} - Enrolled on ${enrollmentTs}`;
 
     const row = (label, key) => `
       <tr>
@@ -136,10 +139,23 @@ function renderFinanceList() {
       </tr>
     `;
 
+    const total = record.total != null ? Number(record.total) : 0;
+    const totalLabel = total.toFixed(2);
+
     return `
       <li class="ticket-item" data-id="${app.id}">
         <div class="ticket-line ticket-line-top">
           <span class="ticket-top-summary">${headerLine}</span>
+        </div>
+
+        <!-- Per-student summary row -->
+        <div class="ticket-line finance-summary">
+          <span class="summary-pill">
+            Total paid: ₹${totalLabel}
+          </span>
+          <span class="summary-muted">
+            (Course fee & balance to be configured later)
+          </span>
         </div>
 
         <div class="fee-table-wrapper">
@@ -167,7 +183,7 @@ function renderFinanceList() {
                 <th>Total</th>
                 <th>
                   <span class="fee-total">
-                    ₹${record.total != null ? Number(record.total).toFixed(2) : '0.00'}
+                    ₹${totalLabel}
                   </span>
                 </th>
               </tr>
@@ -188,12 +204,16 @@ function renderFinanceList() {
       </li>
     `;
   }).join('');
-} // <=== this closing brace was missing
+}
 
 // --- Save fee + per-field timestamps for one ticket ---
 function saveFeeForTicket(ticketId) {
   const itemEl = financeList.querySelector(`.ticket-item[data-id="${ticketId}"]`);
   if (!itemEl) return;
+
+  const prevRecord = financeRecords[ticketId] || {};
+  const prevItems  = prevRecord.items || {};
+  const prevStamps = prevRecord.timestamps || {};
 
   const inputs = itemEl.querySelectorAll('.fee-input');
   const items = {};
@@ -210,16 +230,22 @@ function saveFeeForTicket(ticketId) {
 
     if (valueStr) {
       const parsed = parseFloat(valueStr);
-      if (!isNaN(parsed)) {
-        num = parsed;
-      }
+      if (!isNaN(parsed)) num = parsed;
     }
 
     items[field] = num;
 
+    const prev = prevItems[field] != null ? prevItems[field] : 0;
+
     if (num > 0) {
-      timestamps[field] = nowIso;
+      if (num !== prev) {
+        timestamps[field] = nowIso;
+      } else if (prevStamps[field]) {
+        timestamps[field] = prevStamps[field];
+      }
       total += num;
+    } else if (prevStamps[field]) {
+      timestamps[field] = prevStamps[field];
     }
   });
 
@@ -231,12 +257,7 @@ function saveFeeForTicket(ticketId) {
     lastUpdated: nowIso
   };
 
-  try {
-    localStorage.setItem(FINANCE_KEY, JSON.stringify(financeRecords)); // localStorage JSON pattern [web:185][web:239]
-  } catch (err) {
-    console.warn('Failed to save finance records', err);
-  }
-
+  localStorage.setItem(FINANCE_KEY, JSON.stringify(financeRecords)); // JSON localStorage pattern [web:185][web:239]
   renderFinanceList();
   showToast('Fee details saved');
 }
