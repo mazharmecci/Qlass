@@ -190,21 +190,47 @@
       border-radius: 999px;
     }
     
-    /* Fee table */
+    /* === Fee Table === */
+    .fee-and-receipt {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: flex-start;
+      max-width: 100%;
+      margin-top: 1rem;
+    }
+    
     .fee-table-wrapper {
+      flex: 2;
+      min-width: 280px;
       margin-top: 0.6rem;
       overflow-x: auto;
     }
     
     .fee-table {
-      width: 35%;
+      width: 100%;
       border-collapse: collapse;
-      table-layout: fixed;     /* important */
+      table-layout: fixed; /* important */
       font-size: 0.8rem;
     }
     
-    .fee-table colgroup col:first-child { width: 65%; }
-    .fee-table colgroup col:last-child  { width: 35%; }
+    .fee-table th,
+    .fee-table td {
+      padding: 0.3rem 0.4rem;
+      border-bottom: 1px solid rgba(209, 213, 219, 0.7);
+      text-align: left;
+    }
+    
+    .fee-table thead th {
+      background: rgba(248, 250, 252, 0.9);
+      color: #4b5563;
+      font-weight: 600;
+    }
+    
+    .fee-table tfoot th {
+      background: rgba(239, 246, 255, 0.9);
+      font-weight: 700;
+    }
     
     .fee-cell {
       display: inline-flex;
@@ -241,64 +267,7 @@
       color: #111827;
     }
     
-    .fee-table th,
-    .fee-table td {
-      padding: 0.3rem 0.4rem;
-      border-bottom: 1px solid rgba(209, 213, 219, 0.7);
-      text-align: left;
-    }
-    
-    .fee-table thead th {
-      background: rgba(248, 250, 252, 0.9);
-      color: #4b5563;
-      font-weight: 600;
-    }
-    
-    .fee-table tfoot th {
-      background: rgba(239, 246, 255, 0.9);
-      font-weight: 700;
-    }
-    
-    .btn-whatsapp {
-      margin-left: 8px;
-      border-color: #25d366;
-      color: #25d366;
-    }
-    
-    .btn-whatsapp:hover {
-      background-color: #25d366;
-      color: #fff;
-    }
-    
-    .receipt-preview {
-      border-left: 1px solid #ddd;
-      padding-left: 12px;
-      margin-left: 12px;
-      font-size: 0.9rem;
-      white-space: pre-wrap;
-    }
-    .receipt-preview-title {
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-    .receipt-preview-body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    .fee-and-receipt {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      align-items: flex-start;
-      max-width: 100%;
-      margin-top: 1rem;
-    }
-    
-    .fee-table-wrapper {
-      flex: 2;
-      min-width: 280px;
-    }
-    
+    /* === Receipt Preview (inline, next to table) === */
     .receipt-inline {
       flex: 1;
       min-width: 240px;
@@ -318,7 +287,18 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: #374151;
     }
-
+    
+    /* === WhatsApp Button === */
+    .btn-whatsapp {
+      margin-left: 8px;
+      border-color: #25d366;
+      color: #25d366;
+    }
+    
+    .btn-whatsapp:hover {
+      background-color: #25d366;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
