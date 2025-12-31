@@ -18,7 +18,7 @@ const FINANCE_KEY    = 'qlass_finance_records_v1';
 const toast          = document.getElementById('toast');
 const financeList    = document.getElementById('financeList');
 const searchInput    = document.getElementById('financeSearch');
-const receiptPreview = document.getElementById('receiptPreview'); // make sure this exists in HTML
+const receiptPreview = document.getElementById('receiptPreview');
 
 function showToast(msg){
   if (!toast) return;
