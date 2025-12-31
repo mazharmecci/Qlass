@@ -349,62 +349,19 @@
       </div>
 
       <ul id="financeList" class="ticket-list"></ul>
-
-      <!-- Fee Table + Receipt Preview -->
-      <div class="fee-and-receipt">
-        <!-- Fee Table -->
-        <div class="fee-table-wrapper">
-          <table class="fee-table">
-            <colgroup>
-              <col style="width: 65%" />
-              <col style="width: 35%" />
-            </colgroup>
-            <thead>
-              <tr>
-                <th>Component</th>
-                <th>Amount (₹)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="fee-cell">Books</td>
-                <td>
-                  <input class="fee-input" type="number" value="7500" min="0" step="0.01" />
-                </td>
-              </tr>
-              <tr>
-                <td class="fee-cell">Uniform</td>
-                <td>
-                  <input class="fee-input" type="number" value="0" min="0" step="0.01" />
-                </td>
-              </tr>
-              <!-- Add other components here -->
-            </tbody>
-            <tfoot>
-              <tr>
-                <th>Total</th>
-                <th class="fee-total">₹7500.00</th>
-              </tr>
-            </tfoot>
-          </table>
+      
+      <!-- WhatsApp Receipt Preview -->
+      <div class="receipt-inline">
+        <div class="receipt-inline-title">WhatsApp receipt</div>     
+        <div class="receipt-inline-body receipt-inline-empty" data-receipt-body>
+          WhatsApp receipt will appear here after you click WA.
         </div>
-      
-        <!-- WhatsApp Receipt Preview -->
-        <div class="receipt-inline">
-          <div class="receipt-inline-title">WhatsApp receipt</div>
-      
-          <div class="receipt-inline-body receipt-inline-empty" data-receipt-body>
-            WhatsApp receipt will appear here after you click WA.
-          </div>
-      
-          <button class="btn btn-sm btn-copy-receipt"
-                  data-action="copy-receipt"
-                  data-ticket-id="STU-BEN-0001"
-                  title="Copy receipt to clipboard">
-            📋 Copy
-          </button>
-        </div>
-      </div> <!-- closes .fee-and-receipt -->
+        <button class="btn btn-sm btn-copy-receipt"
+                data-action="copy-receipt"
+                title="Copy receipt to clipboard">
+          📋 Copy
+        </button>
+      </div>
     </section>
   </main>
 
@@ -414,3 +371,4 @@
   <script src="../js/finance.js"></script>
 </body>
 </html>
+
