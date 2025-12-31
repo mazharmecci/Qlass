@@ -120,9 +120,14 @@ financeList.innerHTML = filtered.map(app => {
       <td>${label}</td>
       <td>
         <div class="fee-cell">
-          <input type="number" min="0" step="0.01"
-                 class="fee-input" data-field="${key}"
-                 value="${val(key)}">
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            class="fee-input"
+            data-field="${key}"
+            value="${val(key)}"
+          >
           <span class="fee-timestamp">
             ${stampText(key) ? `• ${stampText(key)}` : ''}
           </span>
@@ -130,15 +135,19 @@ financeList.innerHTML = filtered.map(app => {
       </td>
     </tr>
   `;
-
+  
   return `
     <li class="ticket-item" data-id="${app.id}">
       <div class="ticket-line ticket-line-top">
         <span class="ticket-top-summary">${headerLine}</span>
       </div>
-
+  
       <div class="fee-table-wrapper">
         <table class="fee-table">
+          <colgroup>
+            <col>      <!-- Component -->
+            <col>      <!-- Amount -->
+          </colgroup>
           <thead>
             <tr>
               <th>Component</th>
@@ -165,7 +174,7 @@ financeList.innerHTML = filtered.map(app => {
           </tfoot>
         </table>
       </div>
-
+  
       <div class="ticket-line finance-line">
         <span class="finance-status ${statusClass}">Fee: ${paid}</span>
         <span class="finance-time">Last updated: ${tsLabel}</span>
@@ -178,7 +187,7 @@ financeList.innerHTML = filtered.map(app => {
       </div>
     </li>
   `;
-}).join('');
+  }).join('');
 
 // --- Save fee + per-field timestamps for one ticket ---
 function saveFeeForTicket(ticketId) {
