@@ -303,6 +303,13 @@ function renderFinanceList() {
             <div class="receipt-inline-body receipt-inline-empty" data-receipt-body>
               Click WA to preview receipt here.
             </div>
+            <button
+              class="btn btn-sm btn-copy-receipt"
+              data-action="copy-receipt"
+              data-ticket-id="${app.id}"
+              title="Copy receipt to clipboard">
+              📋 Copy
+            </button>
           </div>
         </div>
 
@@ -444,21 +451,20 @@ if (financeList) {
     if (action === 'copy-receipt') {
       const ticket = financeList.querySelector(`.ticket-item[data-id="${ticketId}"]`);
       if (!ticket) return;
-
+    
       const box = ticket.querySelector('.receipt-inline-body[data-receipt-body]');
       if (!box) return;
-
+    
       const text = box.innerText || '';
       if (!text.trim()) {
         showToast('No receipt to copy');
         return;
       }
-
+    
       try {
         navigator.clipboard.writeText(text);
         showToast('Receipt copied to clipboard');
-
-        // Add copied animation pulse
+    
         btn.classList.add('copied');
         setTimeout(() => btn.classList.remove('copied'), 800);
       } catch (err) {
