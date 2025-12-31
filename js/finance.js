@@ -3,9 +3,10 @@
 const ADMISSIONS_KEY = 'qlass_admissions_state_v2';
 const FINANCE_KEY    = 'qlass_finance_records_v1';
 
-const toast       = document.getElementById('toast');
-const financeList = document.getElementById('financeList');
-const searchInput = document.getElementById('financeSearch');
+const toast          = document.getElementById('toast');
+const financeList    = document.getElementById('financeList');
+const searchInput    = document.getElementById('financeSearch');
+const receiptPreview = document.getElementById('receiptPreview');
 
 function showToast(msg){
   if (!toast) return;
@@ -61,6 +62,77 @@ function getEnrolledApplications() {
       timestamps: app.timestamps || {}
     }))
     .filter(app => app.stages.enrollment === 'enrolled');
+}
+
+// --- Receipt helpers ---
+function buildReceiptText(app, record) {
+  const items   = record.items || {};
+  const payment = record.payment || {};
+  const total   = record.total != null ? Number(record.total) : 0;
+
+  const lines = [];
+
+  lines.push(`Student: ${app.name} (${app.studentId || 'Pending ID'})`);
+  lines.push(`Course: ${app.course}`);
+  if (app.timestamps && app.timestamps.enrollment) {
+    const d = new Date(app.timestamps.enrollment);
+    if (!isNaN(d.getTime())) {
+      lines.push(`Enrolled on: ${d.toLocaleString()}`);
+    }
+  }
+  lines.push('');
+
+  lines.push('Fee components (₹):');
+  const keys = [
+    ['Books', 'books'],
+    ['Uniform', 'uniform'],
+    ['1st Term', 'term1'],
+    ['2nd Term', 'term2'],
+    ['3rd Term', 'term3'],
+    ['4th Term', 'term4']
+  ];
+
+  keys.forEach(([label, key]) => {
+    const raw = items[key];
+    const num = raw != null ? Number(raw) : 0;
+    if (!Number.isNaN(num) && num > 0) {
+      lines.push(`- ${label}: ₹${num.toFixed(2)}`);
+    }
+  });
+
+  lines.push(`Total paid till date: ₹${total.toFixed(2)}`);
+  lines.push('');
+
+  const method = payment.method || '';
+  if (method === 'cash') {
+    lines.push('Payment method: Cash');
+  } else if (method === 'cheque') {
+    lines.push('Payment method: Cheque');
+    if (payment.chequeNo) {
+      lines.push(`Cheque no.: ${payment.chequeNo}`);
+    }
+    if (payment.bankName) {
+      lines.push(`Bank: ${payment.bankName}`);
+    }
+  } else {
+    lines.push('Payment method: Not specified');
+  }
+
+  lines.push('');
+  lines.push('This is a system-generated fee summary.');
+
+  return lines.join('\n'); // template-literal style receipt [web:245][web:287]
+}
+
+function showReceiptSnippet(text) {
+  if (!receiptPreview) return;
+  receiptPreview.innerHTML = `
+    <div class="receipt-preview-title">WhatsApp receipt preview</div>
+    <div class="receipt-preview-body">${text.replace(/\n/g, '<br>')}</div>
+    <div class="receipt-actions">
+      Copy this text and paste it into WhatsApp chat with the parent/guardian.
+    </div>
+  `;
 }
 
 // --- Render finance list (with optional search) ---
@@ -219,6 +291,13 @@ function renderFinanceList() {
             data-ticket-id="${app.id}">
             Save fee details
           </button>
+          <button
+            class="btn btn-ghost btn-sm btn-whatsapp"
+            title="Generate WhatsApp receipt"
+            data-action="whatsapp-receipt"
+            data-ticket-id="${app.id}">
+            <span class="wa-icon">🟢 WA</span>
+          </button>
         </div>
 
         <div class="ticket-line payment-line">
@@ -324,7 +403,7 @@ function saveFeeForTicket(ticketId) {
     }
   };
 
-  localStorage.setItem(FINANCE_KEY, JSON.stringify(financeRecords));
+  localStorage.setItem(FINANCE_KEY, JSON.stringify(financeRecords)); // localStorage pattern [web:185]
   renderFinanceList();
   showToast('Fee details saved');
 }
@@ -338,10 +417,26 @@ if (searchInput) {
 
 if (financeList) {
   financeList.addEventListener('click', (e) => {
-    const btn = e.target.closest('button[data-action="save-fee"]');
+    const btn = e.target.closest('button[data-action]');
     if (!btn) return;
+
+    const action   = btn.dataset.action;
     const ticketId = btn.dataset.ticketId;
-    saveFeeForTicket(ticketId);
+    if (!ticketId) return;
+
+    if (action === 'save-fee') {
+      saveFeeForTicket(ticketId);
+      return;
+    }
+
+    if (action === 'whatsapp-receipt') {
+      const app = getEnrolledApplications().find(a => a.id === ticketId);
+      const record = financeRecords[ticketId] || {};
+      if (!app) return;
+
+      const text = buildReceiptText(app, record);
+      showReceiptSnippet(text);
+    }
   });
 
   // Dynamic show/hide for cheque fields
