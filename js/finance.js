@@ -29,6 +29,13 @@ function loadAdmissionsState() {
 }
 
 // Finance records: keyed by ticket ID
+// financeRecords[ticketId] = {
+//   paid: true/false,
+//   items: { books, uniform, term1, term2, term3, term4 },
+//   timestamps: { books, uniform, term1, term2, term3, term4 },
+//   total: number,
+//   lastUpdated: ISO string
+// }
 let financeRecords = {};
 try {
   financeRecords = JSON.parse(localStorage.getItem(FINANCE_KEY) || '{}');
@@ -86,13 +93,32 @@ function renderFinanceList() {
   financeList.innerHTML = filtered.map(app => {
     const record = financeRecords[app.id] || {};
     const items  = record.items || {};
+    const stamps = record.timestamps || {};
     const paid   = record.paid ? 'Paid' : 'Unpaid';
-    const tsLabel = record.timestamp
-      ? new Date(record.timestamp).toLocaleString()
+    const tsLabel = record.lastUpdated
+      ? new Date(record.lastUpdated).toLocaleString()
       : '—';
 
     const statusClass = record.paid ? 'status-paid' : 'status-unpaid';
     const val = (key) => (items[key] != null ? items[key] : '');
+    const stampText = (key) =>
+      stamps[key] ? new Date(stamps[key]).toLocaleString() : '';
+
+    const row = (label, key) => `
+      <tr>
+        <td>${label}</td>
+        <td>
+          <div class="fee-cell">
+            <input type="number" min="0" step="0.01"
+                   class="fee-input" data-field="${key}"
+                   value="${val(key)}">
+            <span class="fee-timestamp">
+              ${stampText(key) ? `• ${stampText(key)}` : ''}
+            </span>
+          </div>
+        </td>
+      </tr>
+    `;
 
     return `
       <li class="ticket-item" data-id="${app.id}">
@@ -111,54 +137,12 @@ function renderFinanceList() {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Books</td>
-                <td>
-                  <input type="number" min="0" step="0.01"
-                         class="fee-input" data-field="books"
-                         value="${val('books')}">
-                </td>
-              </tr>
-              <tr>
-                <td>Uniform</td>
-                <td>
-                  <input type="number" min="0" step="0.01"
-                         class="fee-input" data-field="uniform"
-                         value="${val('uniform')}">
-                </td>
-              </tr>
-              <tr>
-                <td>1st Term</td>
-                <td>
-                  <input type="number" min="0" step="0.01"
-                         class="fee-input" data-field="term1"
-                         value="${val('term1')}">
-                </td>
-              </tr>
-              <tr>
-                <td>2nd Term</td>
-                <td>
-                  <input type="number" min="0" step="0.01"
-                         class="fee-input" data-field="term2"
-                         value="${val('term2')}">
-                </td>
-              </tr>
-              <tr>
-                <td>3rd Term</td>
-                <td>
-                  <input type="number" min="0" step="0.01"
-                         class="fee-input" data-field="term3"
-                         value="${val('term3')}">
-                </td>
-              </tr>
-              <tr>
-                <td>4th Term</td>
-                <td>
-                  <input type="number" min="0" step="0.01"
-                         class="fee-input" data-field="term4"
-                         value="${val('term4')}">
-                </td>
-              </tr>
+              ${row('Books', 'books')}
+              ${row('Uniform', 'uniform')}
+              ${row('1st Term', 'term1')}
+              ${row('2nd Term', 'term2')}
+              ${row('3rd Term', 'term3')}
+              ${row('4th Term', 'term4')}
             </tbody>
             <tfoot>
               <tr>
@@ -188,44 +172,50 @@ function renderFinanceList() {
   }).join('');
 }
 
-// --- Save fee + total for one ticket ---
+// --- Save fee + per-field timestamps for one ticket ---
 function saveFeeForTicket(ticketId) {
   const itemEl = financeList.querySelector(`.ticket-item[data-id="${ticketId}"]`);
   if (!itemEl) return;
 
   const inputs = itemEl.querySelectorAll('.fee-input');
   const items = {};
+  const timestamps = {};
   let total = 0;
+  const nowIso = new Date().toISOString();
 
   inputs.forEach(input => {
     const field = input.dataset.field;
     if (!field) return;
 
     const valueStr = input.value.trim();
-    if (!valueStr) {
-      items[field] = 0;
-      return;
-    }
+    let num = 0;
 
-    const num = parseFloat(valueStr);
-    if (isNaN(num)) {
-      items[field] = 0;
-      return;
+    if (valueStr) {
+      const parsed = parseFloat(valueStr);
+      if (!isNaN(parsed)) {
+        num = parsed;
+      }
     }
 
     items[field] = num;
-    total += num;
+
+    // Only stamp when a positive amount is present
+    if (num > 0) {
+      timestamps[field] = nowIso;
+      total += num;
+    }
   });
 
   financeRecords[ticketId] = {
     paid: total > 0,
     items,
+    timestamps,
     total,
-    timestamp: new Date().toISOString()
+    lastUpdated: nowIso
   };
 
   try {
-    localStorage.setItem(FINANCE_KEY, JSON.stringify(financeRecords)); // nested object via JSON [web:185]
+    localStorage.setItem(FINANCE_KEY, JSON.stringify(financeRecords)); // object with per-field timestamps [web:235][web:239]
   } catch (err) {
     console.warn('Failed to save finance records', err);
   }
