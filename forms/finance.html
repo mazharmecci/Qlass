@@ -257,7 +257,28 @@
     .fee-table tfoot th {
       background: rgba(239, 246, 255, 0.9);
       font-weight: 700;
-    }  
+    }
+    
+    .receipt-preview {
+      border-left: 1px solid #ddd;
+      padding-left: 12px;
+      margin-left: 12px;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+    }
+    .receipt-preview-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .receipt-preview-body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .receipt-actions {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: #666;
+    }
+
   </style>
 </head>
 <body>
@@ -286,6 +307,8 @@
   </main>
 
   <div id="toast" class="toast"></div>
+  <div id="receiptPreview" class="receipt-preview"></div>
+
   <script src="../js/finance.js"></script>
 </body>
 </html>
