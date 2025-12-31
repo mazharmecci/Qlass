@@ -4,107 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Qlass – Finance Workflow</title>  
-  
+
   <style>
-    .ticket-item {
-      padding: 0.6rem 0.8rem;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid rgba(209, 213, 219, 0.9);
-      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
-      margin-bottom: 0.5rem;
-      transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
-    }
-    
-    .ticket-item:hover {
-      background: rgba(239, 246, 255, 0.9);
-      transform: translateY(-1px);
-      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
-    }
-    
-    .ticket-item.empty {
-      text-align: center;
-      color: var(--qlass-text-muted);
-      font-size: 0.85rem;
-    }
-    
-    /* Reuse existing ticket-line style; just ensure spacing for finance row */
-    
-    .finance-line {
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 0.4rem 0.75rem;
-      margin-top: 0.25rem;
-    }
-    
-    /* Student ID pill (same as admissions) */
-    .ticket-student-id {
-      padding: 0.1rem 0.5rem;
-      border-radius: 999px;
-      background: rgba(34, 197, 94, 0.12);
-      color: #15803d;
-      font-size: 0.75rem;
-      font-weight: 600;
+    /* === Shared Qlass theme (same as Admissions) === */
+    :root {
+      --qlass-surface: rgba(255, 255, 255, 0.86);
+      --qlass-border: 1px solid rgba(148, 163, 184, 0.4);
+      --qlass-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+      --qlass-text-main: #111827;
+      --qlass-text-muted: #6b7280;
     }
 
-    .ticket-search {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      background: #fff;
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: #1f2937;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-    
-    .ticket-search::placeholder {
-      color: #94a3b8;
-      font-weight: 400;
-    }
-    
-    .ticket-search:focus {
-      outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    body {
+      background: radial-gradient(circle at top, #e0f2fe 0, #e5e7eb 40%, #e5e7eb 100%);
+      color: var(--qlass-text-main);
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
     }
 
-    /* Finance status pills */
-    
-    .finance-status {
-      font-size: 0.78rem;
-      font-weight: 600;
-      padding: 0.15rem 0.55rem;
-      border-radius: 999px;
-    }
-    
-    .finance-status.status-paid {
-      background: rgba(22, 163, 74, 0.12);
-      color: #166534;
-    }
-    
-    .finance-status.status-unpaid {
-      background: rgba(248, 113, 113, 0.12);
-      color: #b91c1c;
-    }
-    
-    .finance-amount,
-    .finance-time {
-      font-size: 0.78rem;
-      color: #4b5563;
-    }
-    
-    /* Small finance button variant reusing .btn / .btn-primary */
-    
-    .btn-sm {
-      padding: 0.2rem 0.7rem;
-      font-size: 0.78rem;
-    }
-    
-    /* Header alignment (consistent with admissions header-inner/back-link) */
-    
+    /* Header (consistent with Admissions) */
     header {
       position: sticky;
       top: 0;
@@ -113,7 +31,6 @@
       border-bottom: 1px solid rgba(148, 163, 184, 0.28);
       backdrop-filter: blur(14px);
     }
-    
     .header-inner {
       max-width: 1200px;
       margin: 0 auto;
@@ -122,7 +39,6 @@
       align-items: center;
       justify-content: space-between;
     }
-    
     .header-title {
       font-size: 1rem;
       font-weight: 600;
@@ -130,52 +46,11 @@
       text-transform: uppercase;
       color: #0f172a;
     }
-    
     .header-title span {
       color: #2563eb;
     }
-    
-    /* Make finance card width/spacing consistent */
-    
-    main.container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 1.5rem 1.75rem 2.5rem;
-    }
-    
-    @media (max-width: 640px) {
-      main.container {
-        padding: 1.25rem 1rem 2.25rem;
-      }
-    }
-    
-    /* generic cards */
-    .card {
-      background: var(--qlass-surface);
-      border: var(--qlass-border);
-      box-shadow: var(--qlass-shadow);
-      backdrop-filter: blur(14px);
-    }
-    
-    /* section titles */
-    .section-title {
-      color: #0f172a;
-    }
-    
-    /* meta text */
-    .meta {
-      color: var(--qlass-text-muted);
-      font-size: 0.85rem;
-    }
-        
-    .card-heading-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
-    }
-    
+
+    /* Back link pill */
     .back-link {
       display: inline-flex;
       align-items: center;
@@ -191,28 +66,114 @@
       transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease,
                   box-shadow 0.15s ease;
     }
-    
     .back-link:hover {
-      background: rgba(219, 234, 254, 0.95);    /* light blue hover */
+      background: rgba(219, 234, 254, 0.95);
       border-color: #2563eb;
       transform: translateY(-1px);
       box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
     }
-    
     .back-link:active {
       transform: translateY(0);
       box-shadow: none;
     }
-    
-    /* On very small screens, stack back + title nicely */
+
+    /* Container + card */
+    main.container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1.75rem 2.5rem;
+    }
     @media (max-width: 640px) {
-      .card-heading-row {
-        flex-direction: column;
-        align-items: flex-start;
-      }
+      main.container { padding: 1.25rem 1rem 2.25rem; }
+    }
+    .card {
+      background: var(--qlass-surface);
+      border: var(--qlass-border);
+      box-shadow: var(--qlass-shadow);
+      backdrop-filter: blur(14px);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+    }
+    .card-heading-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    @media (max-width: 640px) {
+      .card-heading-row { flex-direction: column; align-items: flex-start; }
+    }
+    .section-title { color: #0f172a; }
+
+    /* Search bar (same as Admissions) */
+    .ticket-search {
+      width: 100%;
+      max-width: 320px;
+      padding: 0.45rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(255, 255, 255, 0.9);
+      color: #111827;
+      font-size: 0.85rem;
+      outline: none;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .ticket-search::placeholder { color: #9ca3af; }
+    .ticket-search:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25),
+                  0 10px 24px rgba(37, 99, 235, 0.20);
+      background: #ffffff;
     }
 
-</style>
+    /* Ticket items */
+    .ticket-item {
+      padding: 0.6rem 0.8rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(209, 213, 219, 0.9);
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+      margin-bottom: 0.5rem;
+      transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .ticket-item:hover {
+      background: rgba(239, 246, 255, 0.9);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+    }
+    .ticket-item.empty {
+      text-align: center;
+      color: var(--qlass-text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* Finance status pills */
+    .finance-status {
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+    }
+    .finance-status.status-paid {
+      background: rgba(22, 163, 74, 0.12);
+      color: #166534;
+    }
+    .finance-status.status-unpaid {
+      background: rgba(248, 113, 113, 0.12);
+      color: #b91c1c;
+    }
+    .finance-amount, .finance-time {
+      font-size: 0.78rem;
+      color: #4b5563;
+    }
+    .btn-sm {
+      padding: 0.2rem 0.7rem;
+      font-size: 0.78rem;
+      border-radius: 999px;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -221,27 +182,24 @@
       <div class="header-title">Qlass – <span>Finance</span></div>
     </div>
   </header>
-    <main class="container">
-      <section class="card">
-        <div class="card-heading-row">
-          <a href="../index.html" class="back-link">‹ Back to dashboard</a>
-          <h2 class="section-title">Fee Collection</h2>
-        </div>
-    
-        <div class="meta" style="margin-bottom:0.6rem;">
-          <input
-            type="search"
-            id="financeSearch"
-            class="ticket-search"
-            placeholder="Search by student name, Student ID or ticket ID..."
-            autocomplete="off"
-          />
-        </div>
-    
-        <ul id="financeList" class="ticket-list"></ul>
-      </section>
-    </main>
-  
+
+  <main class="container">
+    <section class="card">
+      <div class="card-heading-row">
+        <h2 class="section-title">Fee Collection</h2>
+        <input
+          type="search"
+          id="financeSearch"
+          class="ticket-search"
+          placeholder="Search by student name, Student ID or ticket ID..."
+          autocomplete="off"
+        />
+      </div>
+
+      <ul id="financeList" class="ticket-list"></ul>
+    </section>
+  </main>
+
   <div id="toast" class="toast"></div>
   <script src="../js/finance.js"></script>
 </body>
