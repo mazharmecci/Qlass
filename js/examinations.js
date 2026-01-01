@@ -1,13 +1,55 @@
-// --- Global constant for exams ---
+// --- Global constants for exams + admissions ---
 const EXAMS_KEY = 'qlass_exams_state_v1';
+const ADMISSIONS_KEY = 'qlass_admissions_state_v2';
 
 // --- Helpers ---
 function getExams() {
   const raw = localStorage.getItem(EXAMS_KEY);
   return raw ? JSON.parse(raw) : [];
 }
+
 function saveExams(exams) {
   localStorage.setItem(EXAMS_KEY, JSON.stringify(exams));
+}
+
+function getEnrolledStudents(course) {
+  const raw = localStorage.getItem(ADMISSIONS_KEY);
+  if (!raw) return [];
+  const all = JSON.parse(raw);
+  // adjust field names if your admissions object differs
+  return all.filter(app => app.course === course && app.studentId);
+}
+
+// Build a hydrated exam with attendance + marks
+function addExam(examObj) {
+  const students = getEnrolledStudents(examObj.course);
+
+  const attendance = students.map(app => ({
+    studentId: app.studentId,
+    studentName: app.studentName || '',
+    status: 'Present',
+    timestamp: null
+  }));
+
+  const marks = students.map(app => ({
+    studentId: app.studentId,
+    studentName: app.studentName || '',
+    marksObtained: null,
+    maxMarks: 100,
+    grade: ''
+  }));
+
+  const exam = {
+    ...examObj,
+    attendance,
+    marks,
+    results: []
+  };
+
+  const exams = getExams();
+  exams.push(exam);
+  saveExams(exams);
+  renderExamList();
 }
 
 // --- Render exam list ---
@@ -40,7 +82,10 @@ function renderExamList() {
 
     const attendanceRows = (exam.attendance || []).map(a => `
       <tr>
-        <td>${a.studentId}</td>
+        <td>
+          ${a.studentId}
+          ${a.studentName ? `<div class="sub-label">${a.studentName}</div>` : ''}
+        </td>
         <td>
           <select class="attendance-select" data-student-id="${a.studentId}" data-exam-id="${exam.examId}">
             <option value="Present" ${a.status === 'Present' ? 'selected' : ''}>Present</option>
@@ -53,12 +98,26 @@ function renderExamList() {
 
     const marksRows = (exam.marks || []).map(m => `
       <tr>
-        <td>${m.studentId}</td>
-        <td><input type="number" class="marks-input" data-student-id="${m.studentId}" data-exam-id="${exam.examId}" value="${m.marksObtained || ''}" /></td>
+        <td>
+          ${m.studentId}
+          ${m.studentName ? `<div class="sub-label">${m.studentName}</div>` : ''}
+        </td>
+        <td>
+          <input
+            type="number"
+            min="0"
+            class="marks-input"
+            data-student-id="${m.studentId}"
+            data-exam-id="${exam.examId}"
+            value="${m.marksObtained ?? ''}"
+          />
+        </td>
         <td>${m.maxMarks || 100}</td>
         <td>${m.grade || ''}</td>
       </tr>
     `).join('');
+
+    const hasResults = (exam.results || []).length > 0;
 
     const resultsRows = (exam.results || []).map(r => `
       <tr>
@@ -86,7 +145,7 @@ function renderExamList() {
           <span class="exam-status ${statusClass}">Status: ${exam.status}</span>
         </div>
 
-        <div class="exam-attendance">
+        <div class="exam-attendance exam-section">
           <h4>Attendance</h4>
           <table class="exam-table">
             <thead><tr><th>Student</th><th>Status</th></tr></thead>
@@ -94,7 +153,7 @@ function renderExamList() {
           </table>
         </div>
 
-        <div class="exam-marks">
+        <div class="exam-marks exam-section">
           <h4>Marks</h4>
           <table class="exam-table">
             <thead><tr><th>Student</th><th>Marks</th><th>Max</th><th>Grade</th></tr></thead>
@@ -102,13 +161,22 @@ function renderExamList() {
           </table>
         </div>
 
-        <div class="exam-results">
+        ${hasResults ? `
+        <div class="exam-results exam-section">
           <h4>Results</h4>
           <table class="exam-table">
-            <thead><tr><th>Student</th><th>Marks</th><th>%</th><th>Grade</th><th>Status</th><th>Approved On</th></tr></thead>
-            <tbody>${resultsRows || '<tr><td colspan="6">No results compiled yet</td></tr>'}</tbody>
+            <thead>
+              <tr>
+                <th>Student</th><th>Marks</th><th>%</th><th>Grade</th><th>Status</th><th>Approved On</th>
+              </tr>
+            </thead>
+            <tbody>${resultsRows}</tbody>
           </table>
-        </div>
+        </div>` : `
+        <div class="exam-results exam-section">
+          <h4>Results</h4>
+          <p class="empty-text">No results compiled yet.</p>
+        </div>`}
 
         <div class="ticket-line exam-actions">
           <button class="btn btn-primary btn-sm" data-action="save-attendance" data-exam-id="${exam.examId}">
@@ -153,14 +221,16 @@ document.addEventListener('click', (e) => {
   if (action === 'save-marks') {
     const inputs = document.querySelectorAll(`.marks-input[data-exam-id="${examId}"]`);
     exam.marks = Array.from(inputs).map(inp => {
-      const marksObtained = Number(inp.value) || 0;
+      const marksObtained = inp.value === '' ? null : Number(inp.value);
       const maxMarks = 100;
-      const percentage = (marksObtained / maxMarks) * 100;
+      const percentage = marksObtained == null ? 0 : (marksObtained / maxMarks) * 100;
       let grade = '';
-      if (percentage >= 85) grade = 'A';
-      else if (percentage >= 70) grade = 'B';
-      else if (percentage >= 50) grade = 'C';
-      else grade = 'D';
+      if (marksObtained != null) {
+        if (percentage >= 85) grade = 'A';
+        else if (percentage >= 70) grade = 'B';
+        else if (percentage >= 50) grade = 'C';
+        else grade = 'D';
+      }
       return {
         studentId: inp.dataset.studentId,
         marksObtained,
@@ -170,18 +240,26 @@ document.addEventListener('click', (e) => {
     });
     saveExams(exams);
     alert('Marks saved!');
+    renderExamList();
   }
 
   if (action === 'compile-results') {
-    exam.results = (exam.marks || []).map(m => ({
-      studentId: m.studentId,
-      examId: exam.examId,
-      totalMarks: m.marksObtained,
-      percentage: (m.marksObtained / m.maxMarks) * 100,
-      grade: m.grade,
-      status: m.grade !== 'D' ? 'Pass' : 'Fail',
-      approvedOn: new Date().toISOString()
-    }));
+    exam.results = (exam.marks || []).map(m => {
+      const totalMarks = m.marksObtained ?? 0;
+      const percentage = m.marksObtained == null
+        ? 0
+        : (m.marksObtained / (m.maxMarks || 100)) * 100;
+      const grade = m.grade || '';
+      return {
+        studentId: m.studentId,
+        examId: exam.examId,
+        totalMarks,
+        percentage,
+        grade,
+        status: grade && grade !== 'D' ? 'Pass' : 'Fail',
+        approvedOn: new Date().toISOString()
+      };
+    });
     exam.status = 'Completed';
     saveExams(exams);
     alert('Results compiled!');
@@ -221,19 +299,13 @@ examForm?.addEventListener('submit', (e) => {
       .split(',')
       .map(s => s.trim())
       .filter(Boolean),
-    status: 'Scheduled',
-    attendance: [],
-    marks: [],
-    results: []
+    status: 'Scheduled'
   };
 
-  const exams = getExams();
-  exams.push(examObj);
-  saveExams(exams);
+  addExam(examObj);
 
   examFormSection.classList.add('hidden');
   examForm.reset();
-  renderExamList();
   alert('Exam scheduled successfully!');
 });
 
