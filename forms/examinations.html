@@ -339,32 +339,72 @@
       box-shadow: 0 6px 16px rgba(34, 197, 94, 0.35);
     }
   </style>
-</head>
-<body>
-  <header>
-    <div class="header-inner">
-      <a href="../index.html" class="back-link">‹ Back to dashboard</a>
-      <div class="header-title">Qlass – <span>Examinations</span></div>
-    </div>
-  </header>
-
-  <main class="container">
-    <section class="card" aria-label="Examinations workflow">
-      <div class="card-heading-row">
-        <h1 class="section-title">Examinations</h1>
-        <input
-          type="search"
-          id="examSearch"
-          class="ticket-search"
-          placeholder="Search by course, subject, or exam ID..."
-          autocomplete="off"
-        />
-      </div>
-
-      <!-- Exam list populated dynamically -->
-      <ul id="examList" class="ticket-list"></ul>
-    </section>
-  </main>
+  <body>
+    <main class="container">
+      <section class="card">
+        <div class="card-heading-row">
+          <h2 class="section-title">Examinations</h2>
+          <input
+            type="search"
+            id="examSearch"
+            class="ticket-search"
+            placeholder="Search by course, subject, or exam ID..."
+            autocomplete="off"
+          />
+          <!-- Exam pill button -->
+          <button id="btnScheduleExam" class="summary-pill exam-pill">
+            ➕ Schedule Exam
+          </button>
+        </div>
+  
+        <!-- Exam list populated dynamically -->
+        <ul id="examList" class="ticket-list"></ul>
+      </section>
+  
+      <!-- Hidden exam form -->
+      <section id="examFormSection" class="card hidden">
+        <h3 class="section-title">Schedule New Exam</h3>
+        <form id="examForm">
+          <div class="form-row">
+            <label>Exam ID</label>
+            <input type="text" id="examId" required>
+          </div>
+          <div class="form-row">
+            <label>Course</label>
+            <input type="text" id="examCourse" required>
+          </div>
+          <div class="form-row">
+            <label>Subject</label>
+            <input type="text" id="examSubject" required>
+          </div>
+          <div class="form-row">
+            <label>Exam Type</label>
+            <select id="examType" required>
+              <option value="Midterm">Midterm</option>
+              <option value="Final">Final</option>
+              <option value="Practical">Practical</option>
+              <option value="Viva">Viva</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>Date & Time</label>
+            <input type="datetime-local" id="examDate" required>
+          </div>
+          <div class="form-row">
+            <label>Venue</label>
+            <input type="text" id="examVenue">
+          </div>
+          <div class="form-row">
+            <label>Invigilators (comma separated)</label>
+            <input type="text" id="examInvigilators">
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save Exam</button>
+            <button type="button" id="btnCancelExam" class="btn btn-outline-secondary">Cancel</button>
+          </div>
+        </form>
+      </section>
+    </main>
 
   <script>
     // cache list element for examinations.js logic
