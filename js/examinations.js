@@ -199,6 +199,9 @@ function renderExamList() {
           <button class="btn btn-outline-success btn-sm" data-action="compile-results" data-exam-id="${exam.examId}">
             Compile Results
           </button>
+          <button class="btn btn-outline-danger btn-sm" data-action="delete-exam" data-exam-id="${exam.examId}">
+            🗑 Delete
+          </button>
         </div>
       </li>
     `;
@@ -227,6 +230,18 @@ document.addEventListener('click', (e) => {
     }));
     saveExams(exams);
     alert('Attendance saved!');
+  }
+
+    if (action === 'delete-exam') {
+    const confirmDelete = confirm(
+      `Delete exam ${exam.examId}? This will remove attendance, marks, and results for this exam.`
+    );
+    if (!confirmDelete) return;
+  
+    const updated = exams.filter(ex => ex.examId !== examId);
+    saveExams(updated);
+    alert('Exam deleted.');
+    renderExamList();
   }
 
   if (action === 'save-marks') {
