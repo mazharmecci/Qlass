@@ -1,8 +1,8 @@
-// --- Global constants for exams + admissions ---
+// --- Global constants ---
 const EXAMS_KEY = 'qlass_exams_state_v1';
 const ADMISSIONS_KEY = 'qlass_admissions_state_v2';
 
-// --- Helpers ---
+// --- Exams helpers ---
 function getExams() {
   const raw = localStorage.getItem(EXAMS_KEY);
   return raw ? JSON.parse(raw) : [];
@@ -12,12 +12,23 @@ function saveExams(exams) {
   localStorage.setItem(EXAMS_KEY, JSON.stringify(exams));
 }
 
+// --- Pull enrolled students from Admissions ---
+// Uses admissions state shape: { applications: [ { name, course, studentId, stages, ... } ] }
 function getEnrolledStudents(course) {
   const raw = localStorage.getItem(ADMISSIONS_KEY);
   if (!raw) return [];
-  const all = JSON.parse(raw);
-  // adjust field names if your admissions object differs
-  return all.filter(app => app.course === course && app.studentId);
+  const admissionsState = JSON.parse(raw);
+
+  const apps = Array.isArray(admissionsState.applications)
+    ? admissionsState.applications
+    : [];
+
+  // Only students actually enrolled for this course
+  return apps.filter(app =>
+    app.course === course &&
+    app.studentId &&                     // student ID generated at enrollment
+    app.stages && app.stages.enrollment === 'enrolled'
+  );
 }
 
 // Build a hydrated exam with attendance + marks
@@ -26,14 +37,14 @@ function addExam(examObj) {
 
   const attendance = students.map(app => ({
     studentId: app.studentId,
-    studentName: app.studentName || '',
+    studentName: app.name || '',
     status: 'Present',
     timestamp: null
   }));
 
   const marks = students.map(app => ({
     studentId: app.studentId,
-    studentName: app.studentName || '',
+    studentName: app.name || '',
     marksObtained: null,
     maxMarks: 100,
     grade: ''
@@ -233,6 +244,7 @@ document.addEventListener('click', (e) => {
       }
       return {
         studentId: inp.dataset.studentId,
+        studentName: exam.marks.find(m => m.studentId === inp.dataset.studentId)?.studentName || '',
         marksObtained,
         maxMarks,
         grade
@@ -302,7 +314,7 @@ examForm?.addEventListener('submit', (e) => {
     status: 'Scheduled'
   };
 
-  addExam(examObj);
+  addExam(examObj);   // hydrated with students from Admissions
 
   examFormSection.classList.add('hidden');
   examForm.reset();
