@@ -192,5 +192,50 @@ document.addEventListener('click', (e) => {
 // --- Wire up search ---
 document.getElementById('examSearch')?.addEventListener('input', renderExamList);
 
+// --- Exam form handlers ---
+const btnScheduleExam = document.getElementById('btnScheduleExam');
+const examFormSection = document.getElementById('examFormSection');
+const examForm = document.getElementById('examForm');
+const btnCancelExam = document.getElementById('btnCancelExam');
+
+btnScheduleExam?.addEventListener('click', () => {
+  examFormSection.classList.remove('hidden');
+});
+
+btnCancelExam?.addEventListener('click', () => {
+  examFormSection.classList.add('hidden');
+  examForm.reset();
+});
+
+examForm?.addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  const examObj = {
+    examId: document.getElementById('examId').value.trim(),
+    course: document.getElementById('examCourse').value.trim(),
+    subject: document.getElementById('examSubject').value.trim(),
+    examType: document.getElementById('examType').value,
+    date: document.getElementById('examDate').value,
+    venue: document.getElementById('examVenue').value.trim(),
+    invigilators: document.getElementById('examInvigilators').value
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean),
+    status: 'Scheduled',
+    attendance: [],
+    marks: [],
+    results: []
+  };
+
+  const exams = getExams();
+  exams.push(examObj);
+  saveExams(exams);
+
+  examFormSection.classList.add('hidden');
+  examForm.reset();
+  renderExamList();
+  alert('Exam scheduled successfully!');
+});
+
 // --- Initial render ---
 renderExamList();
