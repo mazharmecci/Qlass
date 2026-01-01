@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Qlass – Examinations Workflow</title>
+
+  <style>
+    /* === Shared Qlass theme (same as Admissions / Finance) === */
+    :root {
+      --qlass-surface: rgba(255, 255, 255, 0.86);
+      --qlass-border: 1px solid rgba(148, 163, 184, 0.4);
+      --qlass-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+      --qlass-text-main: #111827;
+      --qlass-text-muted: #6b7280;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #e0f2fe 0, #e5e7eb 40%, #e5e7eb 100%);
+      color: var(--qlass-text-main);
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+
+    /* Header (consistent with Admissions / Finance) */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: linear-gradient(90deg, rgba(248, 250, 252, 0.96), rgba(241, 245, 249, 0.98));
+      border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+      backdrop-filter: blur(14px);
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0.9rem 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-title {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #0f172a;
+    }
+    .header-title span {
+      color: #2563eb;
+    }
+
+    /* Back link pill */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      text-decoration: none;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(255, 255, 255, 0.85);
+      color: #1f2933;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease,
+                  box-shadow 0.15s ease;
+    }
+    .back-link:hover {
+      background: rgba(219, 234, 254, 0.95);
+      border-color: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.18);
+    }
+    .back-link:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    /* Container + card */
+    main.container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 1.75rem 2.5rem;
+    }
+    @media (max-width: 640px) {
+      main.container { padding: 1.25rem 1rem 2.25rem; }
+    }
+
+    .card {
+      background: var(--qlass-surface);
+      border: var(--qlass-border);
+      box-shadow: var(--qlass-shadow);
+      backdrop-filter: blur(14px);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+    }
+    .card-heading-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    @media (max-width: 640px) {
+      .card-heading-row { flex-direction: column; align-items: flex-start; }
+    }
+    .section-title { color: #0f172a; }
+
+    /* Search bar (same pattern as Admissions/Finance) */
+    .ticket-search {
+      width: 100%;
+      max-width: 320px;
+      padding: 0.45rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(255, 255, 255, 0.9);
+      color: #111827;
+      font-size: 0.85rem;
+      outline: none;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .ticket-search::placeholder { color: #9ca3af; }
+    .ticket-search:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25),
+                  0 10px 24px rgba(37, 99, 235, 0.20);
+      background: #ffffff;
+    }
+
+    /* Exam items (reuse ticket list look) */
+    .ticket-list {
+      list-style: none;
+      padding: 0;
+      margin: 0.5rem 0 0;
+    }
+    .ticket-item {
+      padding: 0.6rem 0.8rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(209, 213, 219, 0.9);
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+      margin-bottom: 0.5rem;
+      transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .ticket-item:hover {
+      background: rgba(239, 246, 255, 0.9);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+    }
+    .ticket-item.empty {
+      text-align: center;
+      color: var(--qlass-text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* Top summary line for exam entries */
+    .ticket-line-top {
+      margin-bottom: 0.35rem;
+    }
+    .ticket-top-summary {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    .exam-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 0.75rem;
+      font-size: 0.78rem;
+      color: #4b5563;
+    }
+
+    .exam-pill {
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(248, 250, 252, 0.9);
+      color: #111827;
+    }
+
+    .exam-pill.status-scheduled {
+      background: rgba(59, 130, 246, 0.12);
+      color: #1d4ed8;
+    }
+
+    .exam-pill.status-completed {
+      background: rgba(22, 163, 74, 0.12);
+      color: #166534;
+    }
+
+    .exam-pill.status-results {
+      background: rgba(234, 179, 8, 0.12);
+      color: #92400e;
+    }
+
+    .btn-sm {
+      padding: 0.2rem 0.7rem;
+      font-size: 0.78rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: rgba(255, 255, 255, 0.95);
+      color: #111827;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    }
+
+    .btn-sm:hover {
+      background: rgba(219, 234, 254, 0.95);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <a href="../index.html" class="back-link">‹ Back to dashboard</a>
+      <div class="header-title">Qlass – <span>Examinations</span></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="card-heading-row">
+        <h2 class="section-title">Examinations</h2>
+        <input
+          type="search"
+          id="examSearch"
+          class="ticket-search"
+          placeholder="Search by course, subject, or exam ID..."
+          autocomplete="off"
+        />
+      </div>
+
+      <!-- Exam list populated dynamically -->
+      <ul id="examList" class="ticket-list"></ul>
+    </section>
+  </main>
+
+  <script src="examinations.js"></script>
+</body>
+</html>
