@@ -229,22 +229,35 @@ transportForm?.addEventListener('submit', (e) => {
 });
 
 // --- Record builder ---
+function parseLatLngPair(value) {
+  if (!value) return null;
+  const parts = value.split(',').map(p => parseFloat(p.trim()));
+  if (parts.length !== 2 || parts.some(isNaN)) return null;
+  return [parts[0], parts[1]];
+}
+
 function buildTransportRecord() {
   const routeName = document.getElementById('routeName').value.trim();
   const busNo = document.getElementById('busNo').value.trim();
   const pickup = document.getElementById('pickup').value.trim();
   const drop = document.getElementById('drop').value.trim();
+  const fromLatLng = document.getElementById('fromLatLng').value.trim();
+  const toLatLng = document.getElementById('toLatLng').value.trim();
 
   if (!routeName) {
     alert('Route name is required.');
     return null;
   }
 
-  // Demo path using provided GPS coordinates
-  const path = [
-    [12.898902893066406, 77.55814361572266], // from
-    [12.9465339,        77.5799954]          // to
-  ];
+  const from = parseLatLngPair(fromLatLng);
+  const to = parseLatLngPair(toLatLng);
+
+  if (!from || !to) {
+    alert('Please enter valid From/To coordinates as "lat,lng".');
+    return null;
+  }
+
+  const path = [from, to];
 
   return {
     id: `TR-${Date.now()}`,
@@ -253,8 +266,8 @@ function buildTransportRecord() {
     pickup,
     drop,
     path,
-    lat: path[0][0],
-    lng: path[0][1],
+    lat: from[0],
+    lng: from[1],
     createdAt: new Date().toISOString()
   };
 }
