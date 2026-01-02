@@ -1,8 +1,9 @@
-// --- Storage helpers ---
+// --- Storage keys ---
 const LEAVE_KEY = 'qlass_student_leave_v1';
 const SCHOLARSHIP_KEY = 'qlass_student_scholarship_v1';
 const TRANSPORT_KEY = 'qlass_student_transport_v1';
 
+// --- Generic storage helpers ---
 function getData(key) {
   const raw = localStorage.getItem(key);
   return raw ? JSON.parse(raw) : [];
@@ -12,7 +13,9 @@ function saveData(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
-// --- Tabs ---
+// ============================
+// Tabs
+// ============================
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const tab = btn.dataset.tab;
@@ -27,7 +30,9 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   });
 });
 
-// --- Leave Form ---
+// ============================
+// Leave Requests
+// ============================
 const leaveForm = document.getElementById('leaveForm');
 const leaveListEl = document.getElementById('leaveList');
 
@@ -77,7 +82,6 @@ leaveForm?.addEventListener('submit', (e) => {
   renderLeave();
 });
 
-// --- Render Leave list ---
 function renderLeave() {
   const leaves = getData(LEAVE_KEY);
   leaveListEl.innerHTML = '';
@@ -108,7 +112,9 @@ function renderLeave() {
     });
 }
 
-// --- Scholarship Form ---
+// ============================
+// Scholarships
+// ============================
 const schForm = document.getElementById('scholarshipForm');
 const schListEl = document.getElementById('scholarshipList');
 
@@ -154,7 +160,6 @@ schForm?.addEventListener('submit', (e) => {
   renderScholarships();
 });
 
-// --- Render Scholarships ---
 function renderScholarships() {
   const scholarships = getData(SCHOLARSHIP_KEY);
   schListEl.innerHTML = '';
@@ -185,11 +190,18 @@ function renderScholarships() {
     });
 }
 
-// --- Transport / Map ---
+// ============================
+// Transport + Map + Bus animation
+// ============================
 const transportForm = document.getElementById('transportForm');
 const transportListEl = document.getElementById('transportList');
 const btnNewTransport = document.getElementById('btnNewTransport');
 const btnCancelTransport = document.getElementById('btnCancelTransport');
+
+let map;
+let transportLayer;
+let busMarker;
+let busAnimationTimer = null;
 
 function showTransportForm() {
   if (!transportForm) return;
@@ -202,11 +214,22 @@ function hideTransportForm() {
   transportForm.reset();
 }
 
-function addTransportRecord(record) {
+btnNewTransport?.addEventListener('click', showTransportForm);
+btnCancelTransport?.addEventListener('click', hideTransportForm);
+
+transportForm?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const record = createTransportRecord();
+  if (!record) return;
+
   const records = getData(TRANSPORT_KEY);
   records.push(record);
   saveData(TRANSPORT_KEY, records);
-}
+
+  hideTransportForm();
+  renderTransport();
+  plotTransportOnMap();
+});
 
 function createTransportRecord() {
   const routeName = document.getElementById('routeName').value.trim();
@@ -219,12 +242,21 @@ function createTransportRecord() {
     return null;
   }
 
+  // Demo path using provided GPS coordinates
+  const path = [
+    [12.898902893066406, 77.55814361572266], // from
+    [12.9465339,        77.5799954]          // to
+  ];
+
   return {
     id: `TR-${Date.now()}`,
     routeName,
     busNo,
     pickup,
     drop,
+    path,
+    lat: path[0][0],
+    lng: path[0][1],
     createdAt: new Date().toISOString()
   };
 }
@@ -255,37 +287,89 @@ function renderTransport() {
           <span>${new Date(t.createdAt).toLocaleString()}</span>
         </div>
       `;
+
+      li.addEventListener('click', () => {
+        if (Array.isArray(t.path) && t.path.length >= 2) {
+          animateBus(t.path);
+        } else {
+          alert('No path data available for this route.');
+        }
+      });
+
       transportListEl.appendChild(li);
     });
 }
 
-btnNewTransport?.addEventListener('click', showTransportForm);
-btnCancelTransport?.addEventListener('click', hideTransportForm);
-
-transportForm?.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const record = createTransportRecord();
-  if (!record) return;
-
-  addTransportRecord(record);
-  hideTransportForm();
-  renderTransport();
-});
-
-// Leaflet map
+// Map + layers
 function initMap() {
   const mapEl = document.getElementById('map');
   if (!mapEl || typeof L === 'undefined') return;
 
-  const map = L.map('map').setView([12.9716, 77.5946], 11);
+  // center between the two points
+  map = L.map('map').setView([12.9227, 77.5690], 12);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
+
+  transportLayer = L.layerGroup().addTo(map);
+  plotTransportOnMap();
 }
 
-// --- Init ---
+function plotTransportOnMap() {
+  if (!map || !transportLayer) return;
+
+  transportLayer.clearLayers();
+  const records = getData(TRANSPORT_KEY);
+
+  records.forEach(t => {
+    if (Array.isArray(t.path) && t.path.length >= 2) {
+      L.polyline(t.path, {
+        color: '#2563eb',
+        weight: 4,
+        opacity: 0.8
+      }).addTo(transportLayer);
+    }
+
+    if (typeof t.lat === 'number' && typeof t.lng === 'number') {
+      L.marker([t.lat, t.lng])
+        .addTo(transportLayer)
+        .bindPopup(`${t.routeName}<br>${t.busNo || ''}`);
+    }
+  });
+}
+
+function animateBus(path) {
+  if (!map || !Array.isArray(path) || path.length < 2) return;
+
+  // stop previous animation
+  if (busAnimationTimer) {
+    clearInterval(busAnimationTimer);
+    busAnimationTimer = null;
+  }
+  if (busMarker) {
+    map.removeLayer(busMarker);
+  }
+
+  let index = 0;
+  busMarker = L.marker(path[0], { title: 'Bus' }).addTo(map);
+  map.fitBounds(path, { padding: [40, 40] });
+
+  busAnimationTimer = setInterval(() => {
+    index++;
+    if (index >= path.length) {
+      clearInterval(busAnimationTimer);
+      busAnimationTimer = null;
+      return;
+    }
+    busMarker.setLatLng(path[index]);
+  }, 1000);
+}
+
+// ============================
+// Init
+// ============================
 renderLeave();
 renderScholarships();
 renderTransport();
