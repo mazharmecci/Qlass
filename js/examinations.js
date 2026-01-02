@@ -209,66 +209,34 @@ function renderExamList() {
 }
 
 // --- Action Handlers ---
-document.addEventListener('click', (e) => {
-  const btn = e.target.closest('button[data-action]');
-  if (!btn) return;
-
-  const action = btn.dataset.action;
-  const examId = btn.dataset.examId;
-  if (!examId) return;
-
-  const exams = getExams();
-  const exam = exams.find(ex => ex.examId === examId);
-  if (!exam) return;
-
-  if (action === 'save-attendance') {
-    const selects = document.querySelectorAll(`.attendance-select[data-exam-id="${examId}"]`);
-    exam.attendance = Array.from(selects).map(sel => ({
-      studentId: sel.dataset.studentId,
-      status: sel.value,
-      timestamp: new Date().toISOString()
-    }));
-    saveExams(exams);
-    alert('Attendance saved!');
-  }
-
-    if (action === 'delete-exam') {
-    const confirmDelete = confirm(
-      `Delete exam ${exam.examId}? This will remove attendance, marks, and results for this exam.`
-    );
-    if (!confirmDelete) return;
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
   
-    const updated = exams.filter(ex => ex.examId !== examId);
-    saveExams(updated);
-    alert('Exam deleted.');
-    renderExamList();
-  }
-
-  if (action === 'save-marks') {
-    const inputs = document.querySelectorAll(`.marks-input[data-exam-id="${examId}"]`);
-    exam.marks = Array.from(inputs).map(inp => {
-      const marksObtained = inp.value === '' ? null : Number(inp.value);
-      const maxMarks = 100;
-      const percentage = marksObtained == null ? 0 : (marksObtained / maxMarks) * 100;
-      let grade = '';
-      if (marksObtained != null) {
-        if (percentage >= 85) grade = 'A';
-        else if (percentage >= 70) grade = 'B';
-        else if (percentage >= 50) grade = 'C';
-        else grade = 'D';
-      }
-      return {
-        studentId: inp.dataset.studentId,
-        studentName: exam.marks.find(m => m.studentId === inp.dataset.studentId)?.studentName || '',
-        marksObtained,
-        maxMarks,
-        grade
-      };
-    });
-    saveExams(exams);
-    alert('Marks saved!');
-    renderExamList();
-  }
+    const action = btn.dataset.action;
+    const examId = btn.dataset.examId;
+    if (!examId) return;
+  
+    const exams = getExams();
+    const exam = exams.find(ex => ex.examId === examId);
+    if (!exam) return;
+  
+    // ...save-attendance / save-marks / compile-results...
+  
+    if (action === 'delete-exam') {
+      const confirmDelete = confirm(
+        `Delete exam ${exam.examId}? This will remove its attendance, marks, and results.`
+      );
+      if (!confirmDelete) return;
+  
+      // Create a new array WITHOUT this exam
+      const updatedExams = exams.filter(ex => ex.examId !== examId);
+  
+      saveExams(updatedExams);
+      alert(`Exam ${exam.examId} deleted.`);
+      renderExamList();
+    }
+  });
 
   if (action === 'compile-results') {
     exam.results = (exam.marks || []).map(m => {
