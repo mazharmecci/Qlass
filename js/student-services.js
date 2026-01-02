@@ -22,6 +22,12 @@ function getCurrentStudent() {
   return raw ? JSON.parse(raw) : null;
 }
 
+function deleteById(key, idField, idValue) {
+  const records = getData(key);
+  const filtered = records.filter(r => r[idField] !== idValue);
+  saveData(key, filtered);
+}
+
 // ============================
 // Tabs
 // ============================
@@ -130,7 +136,19 @@ function renderLeave() {
           <span>${leave.start} → ${leave.end}</span>
           <span>${leave.reason}</span>
         </div>
+        <div class="ticket-line">
+          <button class="btn btn-sm btn-outline-secondary js-leave-delete">
+            🗑 Delete
+          </button>
+        </div>
       `;
+
+      li.querySelector('.js-leave-delete').addEventListener('click', () => {
+        if (!confirm('Delete this leave request?')) return;
+        deleteById(LEAVE_KEY, 'requestId', leave.requestId);
+        renderLeave();
+      });
+
       leaveListEl.appendChild(li);
     });
 }
@@ -222,7 +240,19 @@ function renderScholarships() {
           <span>Amount: ₹${sch.amount.toLocaleString()}</span>
           <span>${new Date(sch.createdAt).toLocaleString()}</span>
         </div>
+        <div class="ticket-line">
+          <button class="btn btn-sm btn-outline-secondary js-sch-delete">
+            🗑 Delete
+          </button>
+        </div>
       `;
+
+      li.querySelector('.js-sch-delete').addEventListener('click', () => {
+        if (!confirm('Delete this scholarship application?')) return;
+        deleteById(SCHOLARSHIP_KEY, 'scholarshipId', sch.scholarshipId);
+        renderScholarships();
+      });
+
       schListEl.appendChild(li);
     });
 }
