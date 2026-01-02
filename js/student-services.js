@@ -289,6 +289,8 @@ function renderTransport() {
     .forEach(record => {
       const li = document.createElement('li');
       li.className = 'ticket-item';
+      li.dataset.routeId = record.id;
+
       li.innerHTML = `
         <div class="ticket-line">
           <span><strong>${record.routeName}</strong></span>
@@ -298,18 +300,43 @@ function renderTransport() {
           <span>${record.pickup || ''} → ${record.drop || ''}</span>
           <span>${new Date(record.createdAt).toLocaleString()}</span>
         </div>
+        <div class="ticket-line">
+          <button class="btn btn-sm btn-outline-secondary js-route-play">
+            ▶ View Route
+          </button>
+          <button class="btn btn-sm btn-outline-secondary js-route-delete">
+            🗑 Delete
+          </button>
+        </div>
       `;
 
-      li.addEventListener('click', () => {
+      // play route (fit/animate)
+      li.querySelector('.js-route-play').addEventListener('click', () => {
         if (Array.isArray(record.path) && record.path.length >= 2) {
-          animateBus(record.path);
+          animateBus(record.path); // or map.fitBounds(record.path, { padding: [40, 40] });
         } else {
           alert('No path data available for this route.');
         }
       });
 
+      // delete route
+      li.querySelector('.js-route-delete').addEventListener('click', () => {
+        deleteTransportRecord(record.id);
+      });
+
       transportListEl.appendChild(li);
     });
+}
+
+function deleteTransportRecord(id) {
+  const confirmDelete = confirm('Delete this transport route?');
+  if (!confirmDelete) return;
+
+  const records = getData(TRANSPORT_KEY);
+  const updated = records.filter(r => r.id !== id);
+  saveData(TRANSPORT_KEY, updated);
+  renderTransport();
+  plotTransportOnMap();
 }
 
 // --- Map + layers ---
