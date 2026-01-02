@@ -203,35 +203,33 @@ let transportLayer;
 let busMarker;
 let busAnimationTimer = null;
 
-function showTransportForm() {
+// --- UI helpers ---
+function toggleTransportForm(show) {
   if (!transportForm) return;
-  transportForm.classList.remove('hidden');
+  transportForm.classList.toggle('hidden', !show);
+  if (!show) transportForm.reset();
 }
 
-function hideTransportForm() {
-  if (!transportForm) return;
-  transportForm.classList.add('hidden');
-  transportForm.reset();
-}
-
-btnNewTransport?.addEventListener('click', showTransportForm);
-btnCancelTransport?.addEventListener('click', hideTransportForm);
+// --- Event wiring ---
+btnNewTransport?.addEventListener('click', () => toggleTransportForm(true));
+btnCancelTransport?.addEventListener('click', () => toggleTransportForm(false));
 
 transportForm?.addEventListener('submit', (e) => {
   e.preventDefault();
-  const record = createTransportRecord();
+  const record = buildTransportRecord();
   if (!record) return;
 
   const records = getData(TRANSPORT_KEY);
   records.push(record);
   saveData(TRANSPORT_KEY, records);
 
-  hideTransportForm();
+  toggleTransportForm(false);
   renderTransport();
   plotTransportOnMap();
 });
 
-function createTransportRecord() {
+// --- Record builder ---
+function buildTransportRecord() {
   const routeName = document.getElementById('routeName').value.trim();
   const busNo = document.getElementById('busNo').value.trim();
   const pickup = document.getElementById('pickup').value.trim();
@@ -261,6 +259,7 @@ function createTransportRecord() {
   };
 }
 
+// --- List rendering ---
 function renderTransport() {
   const records = getData(TRANSPORT_KEY);
   transportListEl.innerHTML = '';
@@ -274,23 +273,23 @@ function renderTransport() {
   records
     .slice()
     .reverse()
-    .forEach(t => {
+    .forEach(record => {
       const li = document.createElement('li');
       li.className = 'ticket-item';
       li.innerHTML = `
         <div class="ticket-line">
-          <span><strong>${t.routeName}</strong></span>
-          <span>${t.busNo || ''}</span>
+          <span><strong>${record.routeName}</strong></span>
+          <span>${record.busNo || ''}</span>
         </div>
         <div class="ticket-line">
-          <span>${t.pickup || ''} → ${t.drop || ''}</span>
-          <span>${new Date(t.createdAt).toLocaleString()}</span>
+          <span>${record.pickup || ''} → ${record.drop || ''}</span>
+          <span>${new Date(record.createdAt).toLocaleString()}</span>
         </div>
       `;
 
       li.addEventListener('click', () => {
-        if (Array.isArray(t.path) && t.path.length >= 2) {
-          animateBus(t.path);
+        if (Array.isArray(record.path) && record.path.length >= 2) {
+          animateBus(record.path);
         } else {
           alert('No path data available for this route.');
         }
@@ -300,7 +299,7 @@ function renderTransport() {
     });
 }
 
-// Map + layers
+// --- Map + layers ---
 function initMap() {
   const mapEl = document.getElementById('map');
   if (!mapEl || typeof L === 'undefined') return;
@@ -323,27 +322,27 @@ function plotTransportOnMap() {
   transportLayer.clearLayers();
   const records = getData(TRANSPORT_KEY);
 
-  records.forEach(t => {
-    if (Array.isArray(t.path) && t.path.length >= 2) {
-      L.polyline(t.path, {
+  records.forEach(record => {
+    if (Array.isArray(record.path) && record.path.length >= 2) {
+      L.polyline(record.path, {
         color: '#2563eb',
         weight: 4,
         opacity: 0.8
       }).addTo(transportLayer);
     }
 
-    if (typeof t.lat === 'number' && typeof t.lng === 'number') {
-      L.marker([t.lat, t.lng])
+    if (typeof record.lat === 'number' && typeof record.lng === 'number') {
+      L.marker([record.lat, record.lng])
         .addTo(transportLayer)
-        .bindPopup(`${t.routeName}<br>${t.busNo || ''}`);
+        .bindPopup(`${record.routeName}<br>${record.busNo || ''}`);
     }
   });
 }
 
+// --- Bus animation ---
 function animateBus(path) {
   if (!map || !Array.isArray(path) || path.length < 2) return;
 
-  // stop previous animation
   if (busAnimationTimer) {
     clearInterval(busAnimationTimer);
     busAnimationTimer = null;
