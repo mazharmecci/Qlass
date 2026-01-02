@@ -362,12 +362,28 @@
       <div id="tab-transport" class="tab-content">
         <button id="btnNewTransport" class="summary-pill">➕ Add Transport Record</button>
       
-        <!-- optional future transport form; keep it hidden if you add it -->
-        <!--
         <form id="transportForm" class="form-card hidden">
-          ...
+          <div class="form-row">
+            <label for="routeName">Route Name</label>
+            <input type="text" id="routeName" required>
+          </div>
+          <div class="form-row">
+            <label for="busNo">Bus Number</label>
+            <input type="text" id="busNo">
+          </div>
+          <div class="form-row">
+            <label for="pickup">Pickup Point</label>
+            <input type="text" id="pickup">
+          </div>
+          <div class="form-row">
+            <label for="drop">Drop Point</label>
+            <input type="text" id="drop">
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <button type="button" id="btnCancelTransport" class="btn btn-outline-secondary">Cancel</button>
+          </div>
         </form>
-        -->
       
         <div id="map" class="map-container"></div>
         <ul id="transportList" class="ticket-list"></ul>
