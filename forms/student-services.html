@@ -283,37 +283,95 @@
         <h2 class="section-title">Student Services</h2>
       </div>
 
-    <!-- Tabs -->
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="leave">Leave Requests</button>
-      <button class="tab-btn" data-tab="scholarships">Scholarships</button>
-      <button class="tab-btn" data-tab="transport">Transport</button>
-    </div>
-    
-    <!-- Leave Requests -->
-    <div id="tab-leave" class="tab-content active">
-      <button id="btnNewLeave" class="summary-pill">➕ New Leave Request</button>
-      <form id="leaveForm" class="form-card hidden">
-        <!-- fields ... -->
-      </form>
-      <ul id="leaveList" class="ticket-list"></ul>
-    </div>
-    
-    <!-- Scholarships -->
-    <div id="tab-scholarships" class="tab-content">
-      <button id="btnNewScholarship" class="summary-pill">➕ Apply Scholarship</button>
-      <form id="scholarshipForm" class="form-card hidden">
-        <!-- fields ... -->
-      </form>
-      <ul id="scholarshipList" class="ticket-list"></ul>
-    </div>
-    
-    <!-- Transport -->
-    <div id="tab-transport" class="tab-content">
-      <button id="btnNewTransport" class="summary-pill">➕ Add Transport Record</button>
-      <div id="map" class="map-container"></div>
-      <ul id="transportList" class="ticket-list"></ul>
-    </div>
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="leave">Leave Requests</button>
+        <button class="tab-btn" data-tab="scholarships">Scholarships</button>
+        <button class="tab-btn" data-tab="transport">Transport</button>
+      </div>
+      
+      <!-- Leave Requests -->
+      <div id="tab-leave" class="tab-content active">
+        <button id="btnNewLeave" class="summary-pill">➕ New Leave Request</button>
+      
+        <form id="leaveForm" class="form-card hidden">
+          <div class="form-row">
+            <label for="leaveStudentId">Student ID</label>
+            <input type="text" id="leaveStudentId" required>
+          </div>
+          <div class="form-row">
+            <label for="leaveType">Leave Type</label>
+            <select id="leaveType" required>
+              <option value="Casual">Casual</option>
+              <option value="Medical">Medical</option>
+              <option value="Exam Prep">Exam Prep</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="leaveStart">Start Date</label>
+            <input type="date" id="leaveStart" required>
+          </div>
+          <div class="form-row">
+            <label for="leaveEnd">End Date</label>
+            <input type="date" id="leaveEnd" required>
+          </div>
+          <div class="form-row">
+            <label for="leaveReason">Reason</label>
+            <textarea id="leaveReason" required></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="button" id="btnCancelLeave" class="btn btn-outline-secondary">Cancel</button>
+          </div>
+        </form>
+      
+        <ul id="leaveList" class="ticket-list"></ul>
+      </div>
+      
+      <!-- Scholarships -->
+      <div id="tab-scholarships" class="tab-content">
+        <button id="btnNewScholarship" class="summary-pill">➕ Apply Scholarship</button>
+      
+        <form id="scholarshipForm" class="form-card hidden">
+          <div class="form-row">
+            <label for="schStudentId">Student ID</label>
+            <input type="text" id="schStudentId" required>
+          </div>
+          <div class="form-row">
+            <label for="schType">Scholarship Type</label>
+            <select id="schType" required>
+              <option value="Merit">Merit</option>
+              <option value="Need-based">Need-based</option>
+              <option value="Sports">Sports</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="schAmount">Amount</label>
+            <input type="number" id="schAmount" required>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Apply</button>
+            <button type="button" id="btnCancelScholarship" class="btn btn-outline-secondary">Cancel</button>
+          </div>
+        </form>
+      
+        <ul id="scholarshipList" class="ticket-list"></ul>
+      </div>
+      
+      <!-- Transport -->
+      <div id="tab-transport" class="tab-content">
+        <button id="btnNewTransport" class="summary-pill">➕ Add Transport Record</button>
+      
+        <!-- optional future transport form; keep it hidden if you add it -->
+        <!--
+        <form id="transportForm" class="form-card hidden">
+          ...
+        </form>
+        -->
+      
+        <div id="map" class="map-container"></div>
+        <ul id="transportList" class="ticket-list"></ul>
+      </div>
       
     </section>
   </main>
