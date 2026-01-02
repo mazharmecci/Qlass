@@ -1,8 +1,13 @@
-// --- Storage keys ---
+// ============================
+// Storage keys
+// ============================
 const LEAVE_KEY = 'qlass_student_leave_v1';
 const SCHOLARSHIP_KEY = 'qlass_student_scholarship_v1';
+const CURRENT_STUDENT_KEY = 'qlass_current_student';
 
-// --- Generic storage helpers ---
+// ============================
+// Generic storage helpers
+// ============================
 function getData(key) {
   const raw = localStorage.getItem(key);
   return raw ? JSON.parse(raw) : [];
@@ -12,6 +17,11 @@ function saveData(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+function getCurrentStudent() {
+  const raw = localStorage.getItem(CURRENT_STUDENT_KEY);
+  return raw ? JSON.parse(raw) : null;
+}
+
 // ============================
 // Tabs
 // ============================
@@ -19,10 +29,12 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const tab = btn.dataset.tab;
 
-    document.querySelectorAll('.tab-btn')
+    document
+      .querySelectorAll('.tab-btn')
       .forEach(b => b.classList.toggle('active', b === btn));
 
-    document.querySelectorAll('.tab-content')
+    document
+      .querySelectorAll('.tab-content')
       .forEach(panel =>
         panel.classList.toggle('active', panel.id === `tab-${tab}`)
       );
@@ -34,20 +46,31 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 // ============================
 const leaveForm = document.getElementById('leaveForm');
 const leaveListEl = document.getElementById('leaveList');
+const leaveStudentIdInput = document.getElementById('leaveStudentId');
+
+function populateLeaveStudentId() {
+  const current = getCurrentStudent();
+  if (!current || !current.studentId) return;
+  leaveStudentIdInput.value = current.studentId;
+  leaveStudentIdInput.readOnly = true;
+}
 
 document.getElementById('btnNewLeave')?.addEventListener('click', () => {
+  populateLeaveStudentId();
   leaveForm.classList.remove('hidden');
 });
 
 document.getElementById('btnCancelLeave')?.addEventListener('click', () => {
   leaveForm.classList.add('hidden');
   leaveForm.reset();
+  leaveStudentIdInput.readOnly = false;
 });
 
-leaveForm?.addEventListener('submit', (e) => {
+leaveForm?.addEventListener('submit', e => {
   e.preventDefault();
 
-  const studentId = document.getElementById('leaveStudentId').value.trim();
+  const current = getCurrentStudent();
+  const studentId = current?.studentId || leaveStudentIdInput.value.trim();
   const type = document.getElementById('leaveType').value;
   const start = document.getElementById('leaveStart').value;
   const end = document.getElementById('leaveEnd').value;
@@ -78,6 +101,7 @@ leaveForm?.addEventListener('submit', (e) => {
 
   leaveForm.classList.add('hidden');
   leaveForm.reset();
+  leaveStudentIdInput.readOnly = false;
   renderLeave();
 });
 
@@ -116,29 +140,42 @@ function renderLeave() {
 // ============================
 const schForm = document.getElementById('scholarshipForm');
 const schListEl = document.getElementById('scholarshipList');
+const schStudentIdInput = document.getElementById('schStudentId');
+
+function populateScholarshipStudentId() {
+  const current = getCurrentStudent();
+  if (!current || !current.studentId) return;
+  schStudentIdInput.value = current.studentId;
+  schStudentIdInput.readOnly = true;
+}
 
 document.getElementById('btnNewScholarship')?.addEventListener('click', () => {
+  populateScholarshipStudentId();
   schForm.classList.remove('hidden');
 });
 
-document.getElementById('btnCancelScholarship')?.addEventListener('click', () => {
-  schForm.classList.add('hidden');
-  schForm.reset();
-});
+document
+  .getElementById('btnCancelScholarship')
+  ?.addEventListener('click', () => {
+    schForm.classList.add('hidden');
+    schForm.reset();
+    schStudentIdInput.readOnly = false;
+  });
 
-schForm?.addEventListener('submit', (e) => {
+schForm?.addEventListener('submit', e => {
   e.preventDefault();
 
-  const studentId = document.getElementById('schStudentId').value.trim();
+  const current = getCurrentStudent();
+  const studentId = current?.studentId || schStudentIdInput.value.trim();
   const type = document.getElementById('schType').value;
   const amountValue = document.getElementById('schAmount').value;
   const amount = Number(amountValue);
 
-  if (!studentId || !amountValue) {
-    alert('Please fill Student ID and Amount.');
+  if (!studentId) {
+    alert('No student selected from admissions.');
     return;
   }
-  if (isNaN(amount) || amount <= 0) {
+  if (!amountValue || isNaN(amount) || amount <= 0) {
     alert('Please enter a valid scholarship amount.');
     return;
   }
@@ -156,6 +193,7 @@ schForm?.addEventListener('submit', (e) => {
 
   schForm.classList.add('hidden');
   schForm.reset();
+  schStudentIdInput.readOnly = false;
   renderScholarships();
 });
 
@@ -194,4 +232,3 @@ function renderScholarships() {
 // ============================
 renderLeave();
 renderScholarships();
-initMap();
