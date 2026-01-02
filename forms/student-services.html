@@ -287,13 +287,12 @@
       <div class="tabs">
         <button class="tab-btn active" data-tab="leave">Leave Requests</button>
         <button class="tab-btn" data-tab="scholarships">Scholarships</button>
-        <button class="tab-btn" data-tab="transport">Transport</button>
       </div>
-      
+
       <!-- Leave Requests -->
       <div id="tab-leave" class="tab-content active">
         <button id="btnNewLeave" class="summary-pill">➕ New Leave Request</button>
-      
+
         <form id="leaveForm" class="form-card hidden">
           <div class="form-row">
             <label for="leaveStudentId">Student ID</label>
@@ -324,14 +323,14 @@
             <button type="button" id="btnCancelLeave" class="btn btn-outline-secondary">Cancel</button>
           </div>
         </form>
-      
+
         <ul id="leaveList" class="ticket-list"></ul>
       </div>
-      
+
       <!-- Scholarships -->
       <div id="tab-scholarships" class="tab-content">
         <button id="btnNewScholarship" class="summary-pill">➕ Apply Scholarship</button>
-      
+
         <form id="scholarshipForm" class="form-card hidden">
           <div class="form-row">
             <label for="schStudentId">Student ID</label>
@@ -354,53 +353,13 @@
             <button type="button" id="btnCancelScholarship" class="btn btn-outline-secondary">Cancel</button>
           </div>
         </form>
-      
+
         <ul id="scholarshipList" class="ticket-list"></ul>
       </div>
-      
-      <!-- Transport -->
-      <div id="tab-transport" class="tab-content">
-        <button id="btnNewTransport" class="summary-pill">➕ Add Transport Record</button>
-      
-        <form id="transportForm" class="form-card hidden">
-          <div class="form-row">
-            <label for="routeName">Route Name</label>
-            <input type="text" id="routeName" required>
-          </div>
-          <div class="form-row">
-            <label for="busNo">Bus Number</label>
-            <input type="text" id="busNo">
-          </div>
-          <div class="form-row">
-            <label for="pickup">Pickup Point</label>
-            <input type="text" id="pickup">
-          </div>
-          <div class="form-row">
-            <label for="drop">Drop Point</label>
-            <input type="text" id="drop">
-          </div>
-          <div class="form-row">
-            <label for="fromLatLng">From (lat,lng)</label>
-            <input type="text" id="fromLatLng" placeholder="12.8989,77.5581">
-          </div>
-          <div class="form-row">
-            <label for="toLatLng">To (lat,lng)</label>
-            <input type="text" id="toLatLng" placeholder="12.9465,77.5800">
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <button type="button" id="btnCancelTransport" class="btn btn-outline-secondary">Cancel</button>
-          </div>
-        </form>
-      
-        <div id="map" class="map-container"></div>
-        <ul id="transportList" class="ticket-list"></ul>
-      </div>
-      
     </section>
   </main>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="../js/student-services.js"></script>
+
 </body>
 </html>
