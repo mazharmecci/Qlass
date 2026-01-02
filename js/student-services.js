@@ -366,6 +366,21 @@ function animateBus(path) {
   }, 1000);
 }
 
+if (typeof L !== 'undefined') {
+  const defaultIconUrl =
+    'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
+  const defaultIcon2xUrl =
+    'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png';
+  const defaultShadowUrl =
+    'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
+
+  L.Icon.Default.mergeOptions({
+    iconUrl: defaultIconUrl,
+    iconRetinaUrl: defaultIcon2xUrl,
+    shadowUrl: defaultShadowUrl
+  });
+}
+
 // ============================
 // Init
 // ============================
