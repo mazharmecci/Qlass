@@ -83,9 +83,8 @@ function renderLeave() {
   leaveListEl.innerHTML = '';
 
   if (!leaves.length) {
-    leaveListEl.innerHTML = `
-      <li class="ticket-item empty">No leave requests yet.</li>
-    `;
+    leaveListEl.innerHTML =
+      '<li class="ticket-item empty">No leave requests yet.</li>';
     return;
   }
 
@@ -161,9 +160,8 @@ function renderScholarships() {
   schListEl.innerHTML = '';
 
   if (!scholarships.length) {
-    schListEl.innerHTML = `
-      <li class="ticket-item empty">No scholarship applications yet.</li>
-    `;
+    schListEl.innerHTML =
+      '<li class="ticket-item empty">No scholarship applications yet.</li>';
     return;
   }
 
@@ -187,17 +185,20 @@ function renderScholarships() {
     });
 }
 
-// --- Transport / Map (basic) ---
+// --- Transport / Map ---
 const transportListEl = document.getElementById('transportList');
+
+document.getElementById('btnNewTransport')?.addEventListener('click', () => {
+  alert('Transport form is not configured yet. You can extend this to add routes.');
+});
 
 function renderTransport() {
   const records = getData(TRANSPORT_KEY);
   transportListEl.innerHTML = '';
 
   if (!records.length) {
-    transportListEl.innerHTML = `
-      <li class="ticket-item empty">No transport records yet.</li>
-    `;
+    transportListEl.innerHTML =
+      '<li class="ticket-item empty">No transport records yet.</li>';
     return;
   }
 
@@ -221,14 +222,12 @@ function renderTransport() {
     });
 }
 
-// Optional: hook up btnNewTransport if you add a form later
-
-// --- Leaflet map init (basic demo) ---
+// Leaflet map
 function initMap() {
   const mapEl = document.getElementById('map');
   if (!mapEl || typeof L === 'undefined') return;
 
-  const map = L.map('map').setView([12.9716, 77.5946], 11); // Bengaluru default
+  const map = L.map('map').setView([12.9716, 77.5946], 11);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
