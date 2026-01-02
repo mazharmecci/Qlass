@@ -186,11 +186,48 @@ function renderScholarships() {
 }
 
 // --- Transport / Map ---
+const transportForm = document.getElementById('transportForm');
 const transportListEl = document.getElementById('transportList');
+const btnNewTransport = document.getElementById('btnNewTransport');
+const btnCancelTransport = document.getElementById('btnCancelTransport');
 
-document.getElementById('btnNewTransport')?.addEventListener('click', () => {
-  alert('Transport form is not configured yet. You can extend this to add routes.');
-});
+function showTransportForm() {
+  if (!transportForm) return;
+  transportForm.classList.remove('hidden');
+}
+
+function hideTransportForm() {
+  if (!transportForm) return;
+  transportForm.classList.add('hidden');
+  transportForm.reset();
+}
+
+function addTransportRecord(record) {
+  const records = getData(TRANSPORT_KEY);
+  records.push(record);
+  saveData(TRANSPORT_KEY, records);
+}
+
+function createTransportRecord() {
+  const routeName = document.getElementById('routeName').value.trim();
+  const busNo = document.getElementById('busNo').value.trim();
+  const pickup = document.getElementById('pickup').value.trim();
+  const drop = document.getElementById('drop').value.trim();
+
+  if (!routeName) {
+    alert('Route name is required.');
+    return null;
+  }
+
+  return {
+    id: `TR-${Date.now()}`,
+    routeName,
+    busNo,
+    pickup,
+    drop,
+    createdAt: new Date().toISOString()
+  };
+}
 
 function renderTransport() {
   const records = getData(TRANSPORT_KEY);
@@ -222,6 +259,19 @@ function renderTransport() {
     });
 }
 
+btnNewTransport?.addEventListener('click', showTransportForm);
+btnCancelTransport?.addEventListener('click', hideTransportForm);
+
+transportForm?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const record = createTransportRecord();
+  if (!record) return;
+
+  addTransportRecord(record);
+  hideTransportForm();
+  renderTransport();
+});
+
 // Leaflet map
 function initMap() {
   const mapEl = document.getElementById('map');
@@ -230,6 +280,7 @@ function initMap() {
   const map = L.map('map').setView([12.9716, 77.5946], 11);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 }
